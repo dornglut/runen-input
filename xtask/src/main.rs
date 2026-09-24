@@ -215,11 +215,7 @@ fn validate_standalone_boundary(root: &Path) -> Result<(), String> {
     let input = read_text(root, "src/input.rs")?;
     require_contains("src/input.rs", &input, "pub struct InputState")?;
     require_contains("src/input.rs", &input, "Keyboard(KeyboardInput)")?;
-    require_contains(
-        "src/input.rs",
-        &input,
-        "PointerButton(PointerButtonInput)",
-    )?;
+    require_contains("src/input.rs", &input, "PointerButton(PointerButtonInput)")?;
     require_absent("src/input.rs", &input, "pub struct ControlId")?;
     require_absent("src/input.rs", &input, "pub enum DigitalTransition")?;
     require_absent("src/input.rs", &input, "DigitalControl {")?;
@@ -235,7 +231,13 @@ fn validate_standalone_boundary(root: &Path) -> Result<(), String> {
         &downstream,
         "runen-input = { package = \"runen-input\", path = \"../..\" }",
     )?;
-    for forbidden in ["workspace = true", "runenwerk", "winit", "runen_ecs", "runen-ui"] {
+    for forbidden in [
+        "workspace = true",
+        "runenwerk",
+        "winit",
+        "runen_ecs",
+        "runen-ui",
+    ] {
         require_absent("downstream manifest", &downstream, forbidden)?;
     }
 
