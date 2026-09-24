@@ -1,103 +1,100 @@
-# Bootstrap procedure
+# RunenInput bootstrap and provenance
 
-This template is a one-time starting point. A generated repository must establish
-its own current authority before accepting substantive implementation.
+This record captures stable repository-bootstrap and predecessor provenance. It
+is not a branch, pull-request, workflow-run, or current-head ledger.
 
-## 1. Identity
+## Generated repository provenance
 
-Replace the placeholder repository, package, crate, version, description, and
-repository metadata with the generated repository's accepted identity.
+```text
+repository:                     dornglut/runen-input
+repository ID:                  1385996662
+template repository:            dornglut/rust-framework-template
+accepted template commit:       500461d51fe155febc806e288e5bc013e413a785
+accepted template tree:         1e1ae24713cd48b5ea2c3fe1da87cf8dd8f8358a
+generated initial commit:       c72df4492681eb96489e92dba9617134b229206e
+generated initial tree:         1e1ae24713cd48b5ea2c3fe1da87cf8dd8f8358a
+generated initial validation:   36031854632 — PASS
+```
 
-Do not leave `rust-framework-template` as an active product identity.
+The generated initial tree exactly matched the accepted template tree. The
+historical template material originated under Apache-2.0. Rights already granted
+on that historical template-origin revision are not revoked or reinterpreted.
+The template is not an ongoing synchronization or architecture authority.
 
-## 2. Classification
+## Bootstrap product decisions
 
-Resolve and record:
+```text
+repository:   dornglut/runen-input
+package:      runen-input
+crate:        runen_input
+version:      0.0.0
+edition:      2024
+rust-version: 1.93.0
+publish:      false
+profile:      rust-framework
+lifecycle:    active
+contribution: owner-only
+visibility:   public
+license:      GPL-3.0-only
+```
 
-- repository profile;
-- lifecycle;
-- contribution mode;
-- owning domain;
-- relationship to existing repositories.
+Rust 1.93.0 is the current bootstrap package/tooling floor inherited from the
+accepted template baseline. Because no RunenInput implementation has transferred
+yet, bootstrap does not claim that 1.93.0 is a stabilized long-term framework
+MSRV. The successor-transfer issue must validate the transferred source before
+changing or presenting an MSRV as a substantive framework compatibility
+commitment.
 
-Use the accepted organization vocabulary rather than inventing local property
-values.
+## Predecessor provenance
 
-## 3. Licensing
+The accepted predecessor boundary at bootstrap is:
 
-Select the product license class before substantive implementation.
+```text
+predecessor repository: dornglut/runenwerk
+accepted predecessor:   7ad601ea931582bd9bf6305611641f7b7349129e
+transferable source:    engine/src/plugins/input/neutral.rs
+pre-transfer issue:     dornglut/runenwerk#774
+accepted delivery:      dornglut/runenwerk#777
+```
 
-Establish the required current `LICENSE`, package SPDX metadata, README license
-statement, and any required additional licensing documentation.
+The accepted pre-transfer correction made the neutral owner self-contained:
+production dependencies are standard-library-only, physical keyboard/pointer
+identity correlation and confirmed-state reduction are neutral-owned, and
+Runenwerk-specific legacy semantic names were removed from the transferable
+owner.
 
-The template's Apache-2.0 license is the template's own current license; it is
-not a generic product-license choice.
+`InputState`, product actions/bindings, plugin/ECS hosting, winit/native
+acquisition, RunenUI adaptation, Draw behavior, and product camera behavior stay
+outside the transferable owner.
 
-License changes are prospective. Historical grants remain historical evidence,
-and third-party material keeps its own license.
+No predecessor implementation source has moved into this repository during
+bootstrap. Runenwerk remains semantic source authority until later accepted
+successor publication under Engineering ADR 0008.
 
-## 4. Toolchain
+## Accepted predecessor lineage
 
-Resolve the generated repository's MSRV and toolchain from product evidence.
+Stable source-provenance milestones for the transferable owner are:
 
-Do not assume the template's current toolchain is the generated product's final
-MSRV. Update the package metadata and toolchain declaration together.
+- Runenwerk #629 — establish the internal neutral-input authority seam;
+- Runenwerk #639 — normalize winit input at the platform edge;
+- Runenwerk #673 — converge native-tablet observations;
+- Runenwerk #675 — correct tablet assurance semantics;
+- Runenwerk #777 — make the neutral owner self-contained for transfer.
 
-## 5. Repository settings
+These references are provenance, not a synchronization mechanism.
 
-Establish the repository's accepted GitHub posture:
+## Intentional deviations from the template
 
-- public or explicitly accepted visibility;
-- default branch `main`;
-- squash merge enabled;
-- merge commits disabled;
-- rebase merge disabled unless specifically justified;
-- merged head branches deleted;
-- normal changes through pull requests;
-- canonical validation required;
-- conversations resolved before merge;
-- force pushes and default-branch deletion blocked;
-- linear history preferred;
-- no meaningless solo-maintainer approval count;
-- applicable security controls enabled or recorded as platform deviations.
+1. RunenInput repository/package/crate identity.
+2. GPL-3.0-only current product representation plus `LICENSING.md`.
+3. RunenInput-specific README, architecture, testing, agent, and provenance
+   documentation.
+4. RunenInput workflow identity.
+5. Product identity and license validation guards.
+6. Explicit staging-authority rules for the ADR-0008 transfer.
+7. Retention of the template Rust 1.93.0 bootstrap floor until transferred-source
+   evidence justifies a different substantive MSRV.
 
-## 6. Validation
-
-Keep `cargo validate` as the canonical command.
-
-Extend the local `xtask` only when the product has a demonstrated validation
-requirement. Product-specific checks remain repository-local and are not moved
-into shared CI.
-
-## 7. Downstream conformance
-
-When the framework exposes a public contract consumed by another repository,
-create an independent downstream conformance package or workload. Do not use
-the template itself as conformance evidence.
-
-## 8. Extraction and provenance
-
-If implementation is transferred from another repository, record:
-
-- source repository and accepted source revision;
-- source path or boundary;
-- ownership and licensing disposition;
-- transfer rationale and scope;
-- consumer migration boundary;
-- deviations introduced during extraction.
-
-The template does not grant authority to transfer source. Extraction remains
-owned by the accepted source and destination work.
-
-## 9. Deviations
-
-Record every intentional deviation from this template baseline in the generated
-repository's appropriate authority.
-
-Do not preserve obsolete template material merely for tree similarity.
-
-## Completion
-
-After these decisions are accepted, the template ceases to be relevant. The
-generated repository becomes the sole authority for its code, architecture,
-validation semantics, roadmap, releases, and compatibility.
+The crate remains semantic-empty and version `0.0.0`; substantive API,
+implementation, conformance, and release decisions belong to the successor
+transfer authority.

@@ -1,11 +1,11 @@
 [package]
-name = "rust-framework-template"
+name = "runen-input"
 version = "0.0.0"
 edition = "2024"
 rust-version = "1.93.0"
 license.workspace = true
-repository = "https://github.com/dornglut/rust-framework-template"
-description = "Reusable Rust framework bootstrap template"
+repository = "https://github.com/dornglut/runen-input"
+description = "Backend-neutral device-input observation and confirmed-state framework"
 publish = false
 
 [workspace]
@@ -14,7 +14,7 @@ members = ["xtask"]
 
 [workspace.package]
 edition = "2024"
-license = "Apache-2.0"
+license = "GPL-3.0-only"
 
 [lints]
 workspace = true
