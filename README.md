@@ -1,77 +1,80 @@
-# Rust Framework Template
+# RunenInput
 
-`dornglut/rust-framework-template` is a one-time bootstrap baseline for new
-Dornglut Rust framework repositories.
-
-It provides a minimal repository shape, repository-owned validation entrypoint,
-bootstrap guidance, and licensing/provenance rules. It is not a product,
-framework runtime, or ongoing synchronization authority.
+RunenInput is the planned standalone Dornglut Rust framework for backend-neutral
+device-input observations and deterministic confirmed-state semantics.
 
 ## Maturity
 
-This repository is intentionally minimal bootstrap infrastructure. It proves a
-working repository shape and validation baseline; it does not define a product
-runtime or public framework API.
+This repository is currently a **bootstrap-stage successor**. It contains the
+RunenInput repository skeleton and validation authority, but no transferable
+RunenInput implementation has moved here yet.
+
+Until a later successor-transfer change is accepted on this repository's
+`main` under Engineering ADR 0008, `dornglut/runenwerk` remains the sole
+semantic source authority for the reusable neutral-input implementation.
 
 ## Boundary
 
-The template owns only generic bootstrap infrastructure:
+RunenInput is intended to own reusable device-level facts and deterministic
+confirmed state: source/device/tool/control/contact identity, keyboard evidence,
+pointer and scroll observations, touch/contact lifetime, demonstrated
+tablet/stylus observations, measurement/coordinate/time/provenance semantics,
+observation admission/order, and confirmed-state reduction.
 
-- Rust package and workspace conventions;
-- root architecture, testing, and agent entrypoints;
-- one canonical `cargo validate` command;
-- a thin immutable CI caller;
-- bootstrap guidance for identity, ownership, licensing, toolchain, settings,
-  validation extensions, conformance, provenance, and deviations.
+It does not own platform acquisition or winit/OS APIs; Runenwerk App/Host/window
+lifecycle; product actions/bindings; RunenUI focus/routing/text semantics; Draw
+stroke/tool behavior; camera policy; RunenECS scheduling; or speculative
+persistence, replay, network, gesture, haptics, HID, or universal action
+frameworks.
 
-Generated repositories own their implementation, public API, architecture,
-dependencies, compatibility, releases, and product-specific validation.
+See [ARCHITECTURE.md](ARCHITECTURE.md).
 
-## Bootstrap
+## Package
 
-A repository created from this template must resolve its own:
+```text
+package: runen-input
+crate: runen_input
+version: 0.0.0
+edition: 2024
+bootstrap rust-version: 1.93.0
+publish: false
+```
 
-1. repository, package, and crate identity;
-2. profile, lifecycle, and contribution classification;
-3. public license class and required license files;
-4. product MSRV and toolchain;
-5. repository visibility, merge policy, branch protection, and security controls;
-6. canonical validation extensions;
-7. downstream conformance workload when a public framework contract exists;
-8. extraction and source provenance when applicable;
-9. every intentional deviation from this baseline.
-
-The template is irrelevant after bootstrap. Do not add synchronization or
-template-update machinery to generated repositories.
-
-See [BOOTSTRAP.md](BOOTSTRAP.md).
+The current Rust version is a bootstrap floor, not a stabilized long-term
+framework MSRV. The successor-transfer work must validate the transferred source
+before making a substantive compatibility commitment.
 
 ## Validation
 
-`cargo validate` is the single repository-owned validation command.
+`cargo validate` is the single repository-owned merge-readiness command.
 
-It verifies the required template authority files, formatting, workspace tests,
-Clippy with warnings denied, rustdoc with warnings denied, Git whitespace, and
-unchanged repository state.
-
-CI invokes the same command through the accepted immutable
-`dornglut/github-workflows` reusable Rust validation workflow.
+It verifies required authority files, product identity and license consistency,
+formatting, locked workspace tests, strict Clippy, rustdoc with warnings denied,
+Git whitespace, and unchanged repository state. CI invokes the same command
+through the accepted immutable Dornglut reusable workflow.
 
 See [TESTING.md](TESTING.md).
 
-## Architecture and policy
+## Authority and provenance
 
 - [Architecture](ARCHITECTURE.md)
 - [Testing](TESTING.md)
-- [Bootstrap](BOOTSTRAP.md)
-- [Agent guide](AGENTS.md)
+- [Bootstrap and provenance](BOOTSTRAP.md)
+- [Executor contract](AGENTS.md)
 - [Organization contribution guidance](https://github.com/dornglut/.github/blob/main/CONTRIBUTING.md)
 - [Organization security policy](https://github.com/dornglut/.github/blob/main/SECURITY.md)
+- [Public license](LICENSE)
+- [Commercial-license guidance](LICENSING.md)
+
+## Contribution
+
+Tracked-content contributions are currently `owner-only`. Issues, discussion,
+reviews, and reproducible reports may still be used through the repository's
+public channels. This posture remains until an accepted inbound mechanism
+preserves the rights required for commercial licensing.
 
 ## License
 
-This template repository is available under the [Apache License 2.0](LICENSE).
-
-A generated repository must select its own product license before accepting
-substantive implementation. The template's Apache-2.0 license does not become
-the generated product's licensing authority.
+RunenInput is publicly represented under [GPL-3.0-only](LICENSE). A separately
+governed commercial licensing path is described in
+[LICENSING.md](LICENSING.md).
