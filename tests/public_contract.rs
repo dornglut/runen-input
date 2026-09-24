@@ -1,11 +1,15 @@
 use runen_input::{
     ContactId, ContactPhase, CoordinateSpace, DigitalState, InputContext, InputDeviceId,
-    InputObservation, InputObservationGroup, InputSourceId, InputState, KeyLocation,
-    KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
-    PhysicalKeyIdentity, Point2, PointerButton, PointerButtonInput, ScrollDelta,
+    InputObservation, InputObservationGroup, InputSourceId, InputState, KeyLocation, KeyboardInput,
+    LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin, PhysicalKeyIdentity,
+    Point2, PointerButton, PointerButtonInput, ScrollDelta,
 };
 
-fn keyboard(key: PhysicalKeyIdentity, state: DigitalState, origin: ObservationOrigin) -> KeyboardInput {
+fn keyboard(
+    key: PhysicalKeyIdentity,
+    state: DigitalState,
+    origin: ObservationOrigin,
+) -> KeyboardInput {
     KeyboardInput {
         physical_key: key,
         logical_key: LogicalKey::Native(NativeLogicalKey::Unidentified),
