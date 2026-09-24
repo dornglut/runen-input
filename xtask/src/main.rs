@@ -104,11 +104,7 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
         &cargo,
         "repository = \"https://github.com/dornglut/runen-input\"",
     )?;
-    require_contains(
-        "Cargo.toml",
-        &cargo,
-        "license = \"GPL-3.0-only\"",
-    )?;
+    require_contains("Cargo.toml", &cargo, "license = \"GPL-3.0-only\"")?;
     require_absent("Cargo.toml", &cargo, "rust-framework-template")?;
 
     let lock = read_text(root, "Cargo.lock")?;
@@ -120,11 +116,7 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
     require_contains("README.md", &readme, "GPL-3.0-only")?;
 
     let license = read_text(root, "LICENSE")?;
-    require_contains(
-        "LICENSE",
-        &license,
-        "GNU GENERAL PUBLIC LICENSE",
-    )?;
+    require_contains("LICENSE", &license, "GNU GENERAL PUBLIC LICENSE")?;
     require_contains("LICENSE", &license, "Version 3, 29 June 2007")?;
 
     let licensing = read_text(root, "LICENSING.md")?;
@@ -136,8 +128,16 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
     )?;
 
     let workflow = read_text(root, ".github/workflows/validation.yml")?;
-    require_contains("validation workflow", &workflow, "name: RunenInput Validation")?;
-    require_contains("validation workflow", &workflow, "name: Validate RunenInput")?;
+    require_contains(
+        "validation workflow",
+        &workflow,
+        "name: RunenInput Validation",
+    )?;
+    require_contains(
+        "validation workflow",
+        &workflow,
+        "name: Validate RunenInput",
+    )?;
     require_absent(
         "validation workflow",
         &workflow,
