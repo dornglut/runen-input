@@ -1,7 +1,9 @@
-//! RunenInput bootstrap shell.
+//! Backend-neutral device-input observation and confirmed-state semantics.
 //!
-//! The reusable device-input implementation has not transferred into this
-//! repository yet. Until accepted successor publication under Engineering
-//! ADR 0008, `dornglut/runenwerk` remains the sole semantic source authority.
-//!
-//! This crate intentionally exposes no framework API during repository bootstrap.
+//! The public contract exposes semantic device observations and one deterministic
+//! confirmed-state reducer. Platform acquisition, product actions, UI interaction,
+//! text/IME, ECS hosting, and product policy remain outside this crate.
+
+mod input;
+
+pub use input::*;

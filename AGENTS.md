@@ -1,44 +1,48 @@
 # RunenInput executor contract
 
-Start with `README.md`, `ARCHITECTURE.md`, `TESTING.md`, `BOOTSTRAP.md`, and
-the current owning issue before changing repository content.
-
-## Current authority state
-
-This repository is the bootstrap-stage successor for RunenInput. It does not yet
-own the reusable device-input implementation.
-
-Until a later successor-transfer pull request is accepted on `main` under
-Engineering ADR 0008, `dornglut/runenwerk` remains the sole semantic source
-authority for the transferable neutral-input implementation.
+Begin with `README.md`, `ARCHITECTURE.md`, `TESTING.md`,
+`BOOTSTRAP.md`, and the current owning issue. Re-resolve current `main`,
+source authority, open writers, and applicable Engineering decisions before
+editing.
 
 ## Durable constraints
 
-- Keep RunenInput host- and backend-neutral.
-- Keep native acquisition, winit/OS integration, Runenwerk App/Host lifecycle,
-  RunenECS scheduling, product actions/bindings, RunenUI routing/focus/text,
-  Draw behavior, and product camera policy outside this repository.
-- Preserve one semantic authority per concern and one-way dependencies.
+- Keep one semantic authority per concern and preserve one-way dependencies.
+- Keep public RunenInput contracts backend- and host-neutral.
+- Keep one product package unless independent authority proves another release
+  boundary. `xtask` is tooling only.
+- Keep reducer-internal control ids and transition representations private.
+- Keep `InputObservationGroup` + `InputState::admit` as the canonical public
+  mutation boundary unless a later accepted contract changes it.
+- Do not move App/Host, winit/native acquisition, RunenECS, RunenUI, text/IME,
+  product actions/bindings, Draw, camera, replay/network, or speculative device
+  semantics into this crate by consumer convenience.
 - Do not add compatibility aliases, forwarding modules/packages, source includes,
-  submodules, mirrors, moving-branch dependencies, or duplicate reducers.
-- Do not move predecessor source without a repository-local successor-transfer
-  issue and exact accepted provenance.
-- Do not stabilize speculative device families, persistence/replay formats,
-  network protocols, or a universal action framework during extraction.
+  submodules, moving-branch dependencies, mirrors, or duplicate reducer authority.
 - Keep tracked-content contributions `owner-only` until an accepted inbound
-  contribution mechanism preserves the rights required for commercial licensing.
-- Keep `cargo validate` as the canonical repository-owned validation command.
-- Keep CI a thin, read-only caller of repository-owned validation.
+  mechanism preserves commercial-relicensing rights.
 
-## Delivery workflow
+## ADR-0008 transfer rule
 
-1. Resolve current `main`, current authority, open writers, and the owning issue.
-2. Audit the complete dependency and provenance closure for the proposed change.
-3. Construct one complete candidate from the exact accepted base.
-4. Validate the exact candidate through repository-owned CI.
-5. Reconcile current `main`, review state, settings, and complete diff before
-   guarded squash merge.
-6. Verify accepted `main` when the owning acceptance contract requires it.
+Before the initial successor transfer is accepted, Runenwerk remains semantic
+source authority and the RunenInput branch is staging only.
 
-The historical framework template is one-time bootstrap provenance, not an
-ongoing synchronization or architecture authority.
+Once the successor transfer is accepted on `main`, RunenInput becomes sole
+semantic source authority. The predecessor copy is frozen and may change only
+for downstream integration, exact-revision migration, evidence, and deletion.
+
+Cutover-blocking reusable defects after the switch are fixed in RunenInput, not
+in the frozen predecessor.
+
+## Validation
+
+Run from a clean checkout:
+
+```text
+cargo validate
+```
+
+Exact-head repository CI is acceptance authority. Reconcile current `main`,
+review state, predecessor source blob/open writers, and repository settings
+before guarded squash merge. Never claim local, CI, platform, or downstream
+evidence that was not observed.

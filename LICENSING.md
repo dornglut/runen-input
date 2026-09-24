@@ -25,14 +25,14 @@ The generated initial repository contained material originating from the
 Apache-2.0 `rust-framework-template`. Rights already granted on that historical
 template-origin revision and material are not revoked or reinterpreted. The
 current RunenInput product representation is established prospectively as
-GPL-3.0-only. This document does not invent a permissive RunenInput history or
-change any third-party license.
+GPL-3.0-only.
 
-## Predecessor source
+## Transferred predecessor source
 
-No RunenInput implementation source has transferred during bootstrap. The
-accepted predecessor neutral-input implementation remains in
-`dornglut/runenwerk` under its GPL-3.0-only public representation until the
-later ADR-0008 successor transfer is accepted. Transfer provenance and
-third-party material must be rechecked by the successor-transfer issue before
-source publication here.
+The reusable input implementation transferred from `dornglut/runenwerk`
+originates from a predecessor repository publicly represented as GPL-3.0-only.
+Stable source provenance is recorded in [BOOTSTRAP.md](BOOTSTRAP.md).
+
+No predecessor NOTICE file existed at the accepted transfer boundary. This
+repository does not invent additional licensing terms for transferred or
+third-party material.

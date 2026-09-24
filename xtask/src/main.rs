@@ -17,8 +17,13 @@ const REQUIRED_FILES: &[&str] = &[
     "LICENSING.md",
     "README.md",
     "TESTING.md",
+    "conformance/downstream/Cargo.lock",
+    "conformance/downstream/Cargo.toml",
+    "conformance/downstream/src/lib.rs",
     "rust-toolchain.toml",
+    "src/input.rs",
     "src/lib.rs",
+    "tests/public_contract.rs",
     "xtask/Cargo.toml",
     "xtask/src/main.rs",
 ];
@@ -43,6 +48,7 @@ fn validate() -> Result<(), String> {
 
     validate_required_files(&root)?;
     validate_product_identity(&root)?;
+    validate_standalone_boundary(&root)?;
 
     let initial_state = git_status(&root)?;
     if !initial_state.is_empty() {
@@ -52,7 +58,28 @@ fn validate() -> Result<(), String> {
     }
 
     run(&root, "cargo", &["fmt", "--all", "--", "--check"])?;
+    run(
+        &root,
+        "cargo",
+        &[
+            "fmt",
+            "--manifest-path",
+            "conformance/downstream/Cargo.toml",
+            "--",
+            "--check",
+        ],
+    )?;
     run(&root, "cargo", &["test", "--workspace", "--locked"])?;
+    run(
+        &root,
+        "cargo",
+        &[
+            "test",
+            "--manifest-path",
+            "conformance/downstream/Cargo.toml",
+            "--locked",
+        ],
+    )?;
     run(
         &root,
         "cargo",
@@ -66,11 +93,41 @@ fn validate() -> Result<(), String> {
             "warnings",
         ],
     )?;
+    run(
+        &root,
+        "cargo",
+        &[
+            "clippy",
+            "--manifest-path",
+            "conformance/downstream/Cargo.toml",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    )?;
     run_with_env(
         &root,
         "cargo",
         &["doc", "--workspace", "--no-deps", "--locked"],
         &[("RUSTDOCFLAGS", "-D warnings")],
+    )?;
+    run(
+        &root,
+        "cargo",
+        &["+1.93.0", "check", "--workspace", "--locked"],
+    )?;
+    run(
+        &root,
+        "cargo",
+        &[
+            "+1.93.0",
+            "check",
+            "--manifest-path",
+            "conformance/downstream/Cargo.toml",
+            "--locked",
+        ],
     )?;
     run(&root, "git", &["diff", "--check"])?;
     run(&root, "git", &["diff", "--cached", "--check"])?;
@@ -99,6 +156,7 @@ fn validate_required_files(root: &Path) -> Result<(), String> {
 fn validate_product_identity(root: &Path) -> Result<(), String> {
     let cargo = read_text(root, "Cargo.toml")?;
     require_contains("Cargo.toml", &cargo, "name = \"runen-input\"")?;
+    require_contains("Cargo.toml", &cargo, "version = \"0.1.0\"")?;
     require_contains(
         "Cargo.toml",
         &cargo,
@@ -109,11 +167,13 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
 
     let lock = read_text(root, "Cargo.lock")?;
     require_contains("Cargo.lock", &lock, "name = \"runen-input\"")?;
+    require_contains("Cargo.lock", &lock, "version = \"0.1.0\"")?;
     require_absent("Cargo.lock", &lock, "rust-framework-template")?;
 
     let readme = read_text(root, "README.md")?;
     require_contains("README.md", &readme, "# RunenInput")?;
     require_contains("README.md", &readme, "GPL-3.0-only")?;
+    require_contains("README.md", &readme, "InputState")?;
 
     let license = read_text(root, "LICENSE")?;
     require_contains("LICENSE", &license, "GNU GENERAL PUBLIC LICENSE")?;
@@ -138,19 +198,52 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
         &workflow,
         "name: Validate RunenInput",
     )?;
-    require_absent(
-        "validation workflow",
-        &workflow,
-        "Rust Framework Template Validation",
-    )?;
 
     let library = read_text(root, "src/lib.rs")?;
-    require_contains("src/lib.rs", &library, "RunenInput bootstrap shell")?;
-    require_absent(
-        "src/lib.rs",
-        &library,
-        "Placeholder library for the Rust framework bootstrap template",
+    require_contains("src/lib.rs", &library, "pub use input::*;")?;
+    require_absent("src/lib.rs", &library, "bootstrap shell")?;
+
+    Ok(())
+}
+
+fn validate_standalone_boundary(root: &Path) -> Result<(), String> {
+    let cargo = read_text(root, "Cargo.toml")?;
+    for forbidden in ["runenwerk", "winit", "runen_ecs", "runen-ui", "runen_ui"] {
+        require_absent("Cargo.toml", &cargo, forbidden)?;
+    }
+
+    let input = read_text(root, "src/input.rs")?;
+    require_contains("src/input.rs", &input, "pub struct InputState")?;
+    require_contains("src/input.rs", &input, "Keyboard(KeyboardInput)")?;
+    require_contains("src/input.rs", &input, "PointerButton(PointerButtonInput)")?;
+    require_absent("src/input.rs", &input, "pub struct ControlId")?;
+    require_absent("src/input.rs", &input, "pub enum DigitalTransition")?;
+    require_absent("src/input.rs", &input, "DigitalControl {")?;
+    require_absent("src/input.rs", &input, "NeutralInputAuthority")?;
+
+    for forbidden in ["runenwerk::", "winit::", "runen_ecs", "runen_ui"] {
+        require_absent("src/input.rs", &input, forbidden)?;
+    }
+
+    let downstream = read_text(root, "conformance/downstream/Cargo.toml")?;
+    require_contains(
+        "downstream manifest",
+        &downstream,
+        "runen-input = { package = \"runen-input\", path = \"../..\" }",
     )?;
+    for forbidden in [
+        "workspace = true",
+        "runenwerk",
+        "winit",
+        "runen_ecs",
+        "runen-ui",
+    ] {
+        require_absent("downstream manifest", &downstream, forbidden)?;
+    }
+
+    if root.join(".gitmodules").exists() {
+        return Err("standalone repository must not contain a submodule".to_owned());
+    }
 
     Ok(())
 }

@@ -1,7 +1,7 @@
-# RunenInput bootstrap and provenance
+# RunenInput bootstrap and transfer provenance
 
-This record captures stable repository-bootstrap and predecessor provenance. It
-is not a branch, pull-request, workflow-run, or current-head ledger.
+This record contains stable repository-bootstrap and source-transfer provenance.
+It is not a branch, pull-request, workflow-run, or current-head ledger.
 
 ## Generated repository provenance
 
@@ -13,21 +13,19 @@ accepted template commit:       500461d51fe155febc806e288e5bc013e413a785
 accepted template tree:         1e1ae24713cd48b5ea2c3fe1da87cf8dd8f8358a
 generated initial commit:       c72df4492681eb96489e92dba9617134b229206e
 generated initial tree:         1e1ae24713cd48b5ea2c3fe1da87cf8dd8f8358a
-generated initial validation:   36031854632 — PASS
 ```
 
-The generated initial tree exactly matched the accepted template tree. The
-historical template material originated under Apache-2.0. Rights already granted
-on that historical template-origin revision are not revoked or reinterpreted.
-The template is not an ongoing synchronization or architecture authority.
+The generated initial tree exactly matched the accepted template tree. Historical
+template-origin material was granted under Apache-2.0; those historical rights
+remain historical and the template is not an ongoing authority.
 
-## Bootstrap product decisions
+## Accepted bootstrap
+
+The accepted product skeleton established:
 
 ```text
-repository:   dornglut/runen-input
 package:      runen-input
 crate:        runen_input
-version:      0.0.0
 edition:      2024
 rust-version: 1.93.0
 publish:      false
@@ -38,63 +36,56 @@ visibility:   public
 license:      GPL-3.0-only
 ```
 
-Rust 1.93.0 is the current bootstrap package/tooling floor inherited from the
-accepted template baseline. Because no RunenInput implementation has transferred
-yet, bootstrap does not claim that 1.93.0 is a stabilized long-term framework
-MSRV. The successor-transfer issue must validate the transferred source before
-changing or presenting an MSRV as a substantive framework compatibility
-commitment.
+The bootstrap accepted no reusable input implementation.
 
-## Predecessor provenance
+## Transferred predecessor provenance
 
-The accepted predecessor boundary at bootstrap is:
+The substantive implementation originates from:
 
 ```text
-predecessor repository: dornglut/runenwerk
-accepted predecessor:   7ad601ea931582bd9bf6305611641f7b7349129e
-transferable source:    engine/src/plugins/input/neutral.rs
-pre-transfer issue:     dornglut/runenwerk#774
-accepted delivery:      dornglut/runenwerk#777
+predecessor:                    dornglut/runenwerk
+accepted pre-transfer revision: 7ad601ea931582bd9bf6305611641f7b7349129e
+fresh transfer census revision: 785e94af583c0a2f9c2050f0a23f1c38258d7ebc
+source path:                    engine/src/plugins/input/neutral.rs
+source blob:                    36c5ff401d2c8ce48a03cfece28764949c772556
+source lineage:                 #629, #639, #673, #675, #777
 ```
 
-The accepted pre-transfer correction made the neutral owner self-contained:
-production dependencies are standard-library-only, physical keyboard/pointer
-identity correlation and confirmed-state reduction are neutral-owned, and
-Runenwerk-specific legacy semantic names were removed from the transferable
-owner.
+The source blob was unchanged between accepted pre-transfer correction and the
+fresh successor-transfer census.
 
-`InputState`, product actions/bindings, plugin/ECS hosting, winit/native
-acquisition, RunenUI adaptation, Draw behavior, and product camera behavior stay
-outside the transferable owner.
+The transferred semantic nucleus includes observation/value semantics,
+deterministic grouped admission, confirmed state, control correlation, validation,
+and the 15 focused semantic tests. Runenwerk `InputState`, ActionState/bindings,
+App/ECS hosting, winit/native acquisition, UI/Draw adaptation, and camera policy
+are not transferred.
 
-No predecessor implementation source has moved into this repository during
-bootstrap. Runenwerk remains semantic source authority until later accepted
-successor publication under Engineering ADR 0008.
+## Successor contract adaptation
 
-## Accepted predecessor lineage
+The predecessor source was self-contained but its external Rust visibility was
+not a standalone contract. The successor therefore performs one bounded
+contract adaptation:
 
-Stable source-provenance milestones for the transferable owner are:
+- public `InputObservation::Keyboard(KeyboardInput)` and
+  `InputObservation::PointerButton(PointerButtonInput)` replace exposure of an
+  interned digital-control observation;
+- public `InputState::admit(InputObservationGroup)` is the canonical mutation
+  path;
+- reducer-internal `ControlId`, `DigitalTransition`, and interning stay private;
+- only demonstrated confirmed-state queries and adapter constructors are exposed.
 
-- Runenwerk #629 — establish the internal neutral-input authority seam;
-- Runenwerk #639 — normalize winit input at the platform edge;
-- Runenwerk #673 — converge native-tablet observations;
-- Runenwerk #675 — correct tablet assurance semantics;
-- Runenwerk #777 — make the neutral owner self-contained for transfer.
+This changes the external seam, not the accepted device-input semantic laws.
 
-These references are provenance, not a synchronization mechanism.
+## ADR-0008 authority handoff
 
-## Intentional deviations from the template
+An unmerged successor branch is staging only. Acceptance of the initial transfer
+on RunenInput `main` is the authority-switch event: the accepted successor
+revision becomes sole semantic source authority and the Runenwerk predecessor
+copy freezes.
 
-1. RunenInput repository/package/crate identity.
-2. GPL-3.0-only current product representation plus `LICENSING.md`.
-3. RunenInput-specific README, architecture, testing, agent, and provenance
-   documentation.
-4. RunenInput workflow identity.
-5. Product identity and license validation guards.
-6. Explicit staging-authority rules for the ADR-0008 transfer.
-7. Retention of the template Rust 1.93.0 bootstrap floor until transferred-source
-   evidence justifies a different substantive MSRV.
+The Runenwerk cutover then pins that exact accepted successor revision and
+deletes the predecessor reusable implementation in the same bounded downstream
+cutover.
 
-The crate remains semantic-empty and version `0.0.0`; substantive API,
-implementation, conformance, and release decisions belong to the successor
-transfer authority.
+No source mirror, forwarding module, source include, submodule, moving branch
+dependency, or dual writable authority is permitted.

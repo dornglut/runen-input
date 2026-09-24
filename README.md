@@ -1,57 +1,72 @@
 # RunenInput
 
-RunenInput is the planned standalone Dornglut Rust framework for backend-neutral
-device-input observations and deterministic confirmed-state semantics.
+RunenInput is a standalone Rust framework for backend-neutral device-input
+observations and deterministic confirmed-state semantics.
 
-## Maturity
+## Authority
 
-This repository is currently a **bootstrap-stage successor**. It contains the
-RunenInput repository skeleton and validation authority, but no transferable
-RunenInput implementation has moved here yet.
+RunenInput's accepted default branch is the semantic source authority for the
+standalone implementation present there. Under Engineering ADR 0008, an
+unmerged transfer candidate is staging only; the initial authority switch occurs
+only when the successor transfer is accepted on `main`.
 
-Until a later successor-transfer change is accepted on this repository's
-`main` under Engineering ADR 0008, `dornglut/runenwerk` remains the sole
-semantic source authority for the reusable neutral-input implementation.
+After that switch, the Runenwerk predecessor copy is frozen and deletion-bound
+until the exact-revision consumer cutover completes.
 
 ## Boundary
 
-RunenInput is intended to own reusable device-level facts and deterministic
-confirmed state: source/device/tool/control/contact identity, keyboard evidence,
-pointer and scroll observations, touch/contact lifetime, demonstrated
-tablet/stylus observations, measurement/coordinate/time/provenance semantics,
-observation admission/order, and confirmed-state reduction.
+RunenInput owns reusable device-level facts and confirmed state:
 
-It does not own platform acquisition or winit/OS APIs; Runenwerk App/Host/window
-lifecycle; product actions/bindings; RunenUI focus/routing/text semantics; Draw
-stroke/tool behavior; camera policy; RunenECS scheduling; or speculative
-persistence, replay, network, gesture, haptics, HID, or universal action
-frameworks.
+- source/device/tool/contact identity;
+- physical and logical keyboard evidence, key location, repeat, and origin;
+- pointer buttons, absolute pointer position, relative motion, and two-axis scroll;
+- touch/contact lifetime and cancellation;
+- demonstrated tablet/stylus observations;
+- coordinate and measurement domains, source time, delivery/history role,
+  evidence certainty, and origin;
+- deterministic grouped admission and confirmed-state reduction.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md).
+It does not own platform acquisition, winit/OS APIs, App/Host/window lifecycle,
+product actions/bindings, RunenUI routing/focus/text semantics, Draw behavior,
+camera policy, RunenECS scheduling, or speculative replay/network/device-family
+contracts.
+
+## Public contract
+
+`InputObservationGroup` is the canonical admission unit and
+`InputState::admit` is the single public mutation path.
+
+Keyboard and pointer-button evidence are semantic observations:
+
+```text
+InputObservation::Keyboard(KeyboardInput)
+InputObservation::PointerButton(PointerButtonInput)
+```
+
+Reducer-internal control ids and digital transition forms are not public API.
+
+`InputState` exposes confirmed-state queries for physical keys, pointer buttons,
+absolute pointer position, and contacts. Predicted or estimated tablet evidence
+does not mutate confirmed contact state.
 
 ## Package
 
 ```text
 package: runen-input
 crate: runen_input
-version: 0.0.0
+version: 0.1.0
 edition: 2024
-bootstrap rust-version: 1.93.0
+rust-version: 1.93.0
 publish: false
 ```
 
-The current Rust version is a bootstrap floor, not a stabilized long-term
-framework MSRV. The successor-transfer work must validate the transferred source
-before making a substantive compatibility commitment.
-
 ## Validation
 
-`cargo validate` is the single repository-owned merge-readiness command.
-
-It verifies required authority files, product identity and license consistency,
-formatting, locked workspace tests, strict Clippy, rustdoc with warnings denied,
-Git whitespace, and unchanged repository state. CI invokes the same command
-through the accepted immutable Dornglut reusable workflow.
+`cargo validate` is the repository-owned merge-readiness command. It covers
+the transferred semantic laws, public-contract integration tests, independent
+downstream conformance, source/dependency boundary guards, formatting, locked
+tests, strict Clippy, rustdoc, the declared Rust floor, Git whitespace, and
+unchanged repository state.
 
 See [TESTING.md](TESTING.md).
 
@@ -59,7 +74,7 @@ See [TESTING.md](TESTING.md).
 
 - [Architecture](ARCHITECTURE.md)
 - [Testing](TESTING.md)
-- [Bootstrap and provenance](BOOTSTRAP.md)
+- [Bootstrap and transfer provenance](BOOTSTRAP.md)
 - [Executor contract](AGENTS.md)
 - [Organization contribution guidance](https://github.com/dornglut/.github/blob/main/CONTRIBUTING.md)
 - [Organization security policy](https://github.com/dornglut/.github/blob/main/SECURITY.md)
@@ -70,8 +85,7 @@ See [TESTING.md](TESTING.md).
 
 Tracked-content contributions are currently `owner-only`. Issues, discussion,
 reviews, and reproducible reports may still be used through the repository's
-public channels. This posture remains until an accepted inbound mechanism
-preserves the rights required for commercial licensing.
+public channels.
 
 ## License
 
