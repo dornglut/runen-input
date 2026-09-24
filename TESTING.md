@@ -6,52 +6,48 @@
 cargo validate
 ```
 
-This command is implemented by the repository-local `xtask` and is the
-merge-readiness baseline for the RunenInput repository.
+The repository-local `xtask` owns merge-readiness semantics.
 
-## Bootstrap baseline checks
+## Validation portfolio
 
-Validation fails closed when:
+The validator covers:
 
-- a required repository authority file is missing;
-- package/repository identity is not `runen-input` / `dornglut/runen-input`;
-- Cargo public license metadata is not `GPL-3.0-only`;
-- the current license files do not represent GPL-3.0-only plus the separate
-  commercial-license guidance;
-- active crate/workflow identity still claims to be the generic framework
-  template;
-- Rust formatting is not clean;
-- locked workspace tests fail;
-- Clippy emits warnings;
-- rustdoc emits warnings;
-- Git whitespace checks fail;
-- validation changes repository state.
+- required authority and provenance files;
+- package/repository/license identity;
+- standalone source/dependency boundaries;
+- the public observation/state contract;
+- all 15 transferred focused semantic/reducer laws;
+- root public-contract integration tests;
+- independent `conformance/downstream` public-API tests;
+- root and downstream rustfmt;
+- locked workspace and downstream tests;
+- strict root and downstream Clippy;
+- rustdoc with warnings denied;
+- Rust 1.93.0 checks for root and downstream packages;
+- Git whitespace checks;
+- unchanged repository state.
 
-The validator starts from a clean repository and verifies that the repository
-remains unchanged after the checks.
+## Transferred semantic laws
 
-## Current proof boundary
+The focused source tests prove deterministic source/admission ordering,
+down/up admission identity, keyboard and pointer correlation, source/device
+separation, aggregate held state, repeat/reconciliation behavior, contact
+identity, explicit absent scroll axes, omitted-vs-zero measurement semantics,
+atomic invalid-group rejection, predicted/estimated tablet behavior, stale
+contact clearing, and invalid tablet measurement atomicity.
 
-Bootstrap intentionally has no transferred input implementation and therefore no
-device-input conformance portfolio yet. The root crate is semantic-empty.
+## Independent downstream proof
 
-The repository-local successor-transfer issue must establish focused standalone
-conformance for the transferred observation/reducer semantics before successor
-acceptance. Bootstrap CI must not be misrepresented as proof of the future input
-framework implementation.
+`conformance/downstream` is a separate Cargo workspace with one dependency:
+the public `runen-input` package through `path = "../.."`.
+
+It proves multi-context key state, aggregate release behavior, reconciliation,
+pointer-button state, and contact state without Runenwerk, winit, RunenECS,
+RunenUI, or private-module access.
 
 ## CI
 
-The workflow in `.github/workflows/validation.yml` is intentionally thin. It
-pins the accepted `dornglut/github-workflows` reusable Rust validation workflow
-to an immutable commit and delegates validation meaning to
-`cargo +stable validate`.
-
-The reusable workflow proves the exact caller revision before validation and
-provisions stable plus Cargo-declared Rust versions required by the checked-out
-repository.
-
-Local validation is preparation. Pull-request acceptance requires independent
-repository-owned CI against the exact reviewed feature head. Accepted-main
-validation is required when the owning bootstrap or transfer authority calls for
-it.
+`.github/workflows/validation.yml` remains a thin immutable caller of the
+accepted shared Rust validation workflow. Local execution is preparation;
+acceptance requires repository-owned CI on the exact reviewed feature head and,
+for the initial authority transfer, accepted-main validation after merge.
