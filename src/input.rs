@@ -560,7 +560,6 @@ impl InputObservationGroup {
     pub fn single(context: InputContext, observation: InputObservation) -> Self {
         Self::new(context, vec![observation])
     }
-
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -656,11 +655,7 @@ impl InputState {
             .is_some_and(|control| self.control_down_anywhere(control))
     }
 
-    pub fn pointer_button_down_in(
-        &self,
-        context: InputContext,
-        button: PointerButton,
-    ) -> bool {
+    pub fn pointer_button_down_in(&self, context: InputContext, button: PointerButton) -> bool {
         self.controls
             .button(button)
             .is_some_and(|control| self.control_down_in(context, control))
@@ -676,11 +671,7 @@ impl InputState {
         self.state.absolute_pointer_positions.get(&source).copied()
     }
 
-    pub fn contact_position_in(
-        &self,
-        context: InputContext,
-        contact: ContactId,
-    ) -> Option<Point2> {
+    pub fn contact_position_in(&self, context: InputContext, contact: ContactId) -> Option<Point2> {
         self.state
             .contacts
             .get(&(context.source, context.device, contact))
@@ -731,14 +722,12 @@ impl InputState {
                     (ObservationOrigin::SourceReport, DigitalState::Released) => {
                         DigitalTransition::Up
                     }
-                    (
-                        ObservationOrigin::BackendSyntheticReconciliation,
-                        DigitalState::Pressed,
-                    ) => DigitalTransition::ReconcileDown,
-                    (
-                        ObservationOrigin::BackendSyntheticReconciliation,
-                        DigitalState::Released,
-                    ) => DigitalTransition::Cancel,
+                    (ObservationOrigin::BackendSyntheticReconciliation, DigitalState::Pressed) => {
+                        DigitalTransition::ReconcileDown
+                    }
+                    (ObservationOrigin::BackendSyntheticReconciliation, DigitalState::Released) => {
+                        DigitalTransition::Cancel
+                    }
                 };
                 self.apply_digital_control(context, control, transition);
             }
@@ -855,11 +844,7 @@ impl InputState {
     }
 
     #[cfg(test)]
-    fn contact_state_in(
-        &self,
-        context: InputContext,
-        contact: ContactId,
-    ) -> Option<ContactState> {
+    fn contact_state_in(&self, context: InputContext, contact: ContactId) -> Option<ContactState> {
         self.state
             .contacts
             .get(&(context.source, context.device, contact))
