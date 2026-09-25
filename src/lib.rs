@@ -12,6 +12,8 @@
 //! executable walkthrough.
 //!
 
+#![deny(missing_docs)]
+
 mod contact;
 mod continuity;
 mod digital;
