@@ -445,8 +445,7 @@ mod tests {
             std::process::id()
         ));
         if root.exists() {
-            fs::remove_dir_all(&root)
-                .expect("stale temporary source root should be removable");
+            fs::remove_dir_all(&root).expect("stale temporary source root should be removable");
         }
         fs::create_dir_all(root.join("src/nested"))
             .expect("temporary nested source root should be creatable");

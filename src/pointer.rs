@@ -59,4 +59,3 @@ pub struct ScrollInput {
     pub domain: ScrollDomain,
     pub phase: Option<ScrollPhase>,
 }
-

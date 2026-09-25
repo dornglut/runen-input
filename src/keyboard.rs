@@ -56,4 +56,3 @@ pub struct KeyboardInput {
     pub repeat: bool,
     pub origin: ObservationOrigin,
 }
-

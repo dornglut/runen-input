@@ -79,4 +79,3 @@ pub struct TabletObservation {
     pub delivery: DeliveryRole,
     pub origin: ObservationOrigin,
 }
-

@@ -63,4 +63,3 @@ impl ContactId {
         self.0
     }
 }
-

@@ -3,4 +3,3 @@ pub enum DigitalState {
     Pressed,
     Released,
 }
-

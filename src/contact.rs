@@ -16,4 +16,3 @@ pub struct ContactInput {
     pub pressure: Option<AnalogMeasurement>,
     pub altitude_angle_radians: Option<f32>,
 }
-

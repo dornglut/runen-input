@@ -113,4 +113,3 @@ fn has_valid_measurements(observation: &InputObservation) -> bool {
 fn point_is_finite(point: Point2) -> bool {
     point.x.is_finite() && point.y.is_finite()
 }
-

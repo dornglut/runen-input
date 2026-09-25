@@ -58,4 +58,3 @@ pub enum InputError {
     InvalidMeasurement,
     SourceTimeContextMismatch,
 }
-
