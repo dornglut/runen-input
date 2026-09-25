@@ -354,6 +354,15 @@ fn collect_rust_source_files(
 
     for entry in entries {
         let path = entry.path();
+        let ignored_top_level_subtree = current_root == source_root
+            && entry
+                .file_name()
+                .to_str()
+                .is_some_and(|name| ignored_top_level_directories.contains(&name));
+        if ignored_top_level_subtree {
+            continue;
+        }
+
         let file_type = entry
             .file_type()
             .map_err(|error| format!("failed to inspect {}: {error}", path.display()))?;
@@ -365,14 +374,6 @@ fn collect_rust_source_files(
             ));
         }
         if file_type.is_dir() {
-            let ignored_top_level_directory = current_root == source_root
-                && entry
-                    .file_name()
-                    .to_str()
-                    .is_some_and(|name| ignored_top_level_directories.contains(&name));
-            if ignored_top_level_directory {
-                continue;
-            }
             collect_rust_source_files(
                 source_root,
                 &path,
@@ -586,7 +587,8 @@ mod tests {
         let root = temporary_source_root("conformance-test-boundary");
         let source = root.join("conformance/downstream/src");
         let test_target = root.join("conformance/downstream/tests/nested");
-        fs::create_dir_all(&source).expect("temporary conformance source root should be creatable");
+        fs::create_dir_all(&source)
+            .expect("temporary conformance source root should be creatable");
         fs::create_dir_all(&test_target)
             .expect("temporary conformance test target should be creatable");
         fs::write(source.join("lib.rs"), "// fixture\n")
@@ -611,7 +613,8 @@ mod tests {
         let root = temporary_source_root("conformance-target-output");
         let source = root.join("conformance/downstream/src");
         let target = root.join("conformance/downstream/target/debug/build");
-        fs::create_dir_all(&source).expect("temporary conformance source root should be creatable");
+        fs::create_dir_all(&source)
+            .expect("temporary conformance source root should be creatable");
         fs::create_dir_all(&target).expect("temporary Cargo target output should be creatable");
         fs::write(source.join("lib.rs"), "// fixture\n")
             .expect("temporary conformance crate root should be writable");
