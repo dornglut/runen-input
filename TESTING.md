@@ -14,7 +14,7 @@ The validator covers:
 
 - required authority and provenance files;
 - package/repository/license identity;
-- recursive, fail-closed scans of the complete Rust product and independent conformance source closures;
+- recursive, fail-closed scans of the complete Rust product source closure and every authored Rust source in the independent conformance package, excluding Cargo `target/` build output;
 - standalone source/dependency boundaries, including the std-only product semantic core;
 - required canonical executable example presence;
 - the public observation/state contract;
