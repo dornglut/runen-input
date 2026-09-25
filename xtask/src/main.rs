@@ -213,8 +213,7 @@ fn validate_std_only_product_manifest(cargo: &str) -> Result<(), String> {
         let direct_dependency_section =
             matches!(section, "[dependencies]" | "[build-dependencies]");
         let target_dependency_section = section.starts_with("[target.")
-            && (section.ends_with(".dependencies]")
-                || section.ends_with(".build-dependencies]"));
+            && (section.ends_with(".dependencies]") || section.ends_with(".build-dependencies]"));
         if direct_dependency_section || target_dependency_section {
             return Err(format!(
                 "Cargo.toml product semantic core must remain std-only; dependency section is not allowed: {section}"
@@ -520,8 +519,11 @@ mod tests {
         let conformance = root.join("conformance/downstream/src/nested");
         fs::create_dir_all(&conformance)
             .expect("temporary conformance source root should be creatable");
-        fs::write(root.join("conformance/downstream/src/lib.rs"), "// fixture\n")
-            .expect("temporary conformance crate root should be writable");
+        fs::write(
+            root.join("conformance/downstream/src/lib.rs"),
+            "// fixture\n",
+        )
+        .expect("temporary conformance crate root should be writable");
         fs::write(
             conformance.join("escape.rs"),
             "use runenwerk::runtime::Host;\n",
