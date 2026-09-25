@@ -1,8 +1,8 @@
 use super::{DigitalTransition, InputState};
 use crate::{
-    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, CoordinateSpace,
-    DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId, InputError,
-    InputObservation, InputObservationGroup, InputSourceId, InputToolKind, KeyLocation,
+    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, ContinuityLoss,
+    CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId,
+    InputError, InputObservation, InputObservationGroup, InputSourceId, InputToolKind, KeyLocation,
     KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
     PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton, PointerButtonInput,
     RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit,
@@ -341,6 +341,225 @@ fn same_contact_id_on_distinct_contexts_does_not_alias() {
 
     assert!(authority.contact_state_in(context_a, contact).is_some());
     assert!(authority.contact_state_in(context_b, contact).is_some());
+}
+
+#[test]
+fn source_continuity_loss_invalidates_only_the_affected_source_without_fabricated_edges() {
+    let mut authority = InputState::default();
+    let context_a = InputContext::new(SOURCE_A, Some(InputDeviceId::new(1)));
+    let context_b = InputContext::new(SOURCE_B, Some(InputDeviceId::new(2)));
+    let key = PhysicalKeyIdentity::code("KeySourceLoss");
+    let contact = ContactId::new(71);
+    let position = Point2::new(7.0, 11.0, CoordinateSpace::WindowPhysicalPixels);
+
+    authority
+        .admit(InputObservationGroup::new(
+            context_a,
+            vec![
+                InputObservation::Keyboard(keyboard_input(
+                    key.clone(),
+                    DigitalState::Pressed,
+                    false,
+                    ObservationOrigin::SourceReport,
+                )),
+                InputObservation::PointerButton(PointerButtonInput {
+                    button: PointerButton::Left,
+                    state: DigitalState::Pressed,
+                }),
+                InputObservation::AbsolutePointerPosition { position },
+                InputObservation::Contact(ContactInput {
+                    contact,
+                    phase: ContactPhase::Begin,
+                    position,
+                    pressure: None,
+                    altitude_angle_radians: None,
+                }),
+            ],
+        ))
+        .expect("source-A state should admit");
+    authority
+        .admit(InputObservationGroup::single(
+            context_b,
+            InputObservation::Keyboard(keyboard_input(
+                key.clone(),
+                DigitalState::Pressed,
+                false,
+                ObservationOrigin::SourceReport,
+            )),
+        ))
+        .expect("source-B state should admit");
+
+    assert_eq!(authority.admission_sequence().get(), 2);
+    authority
+        .admit(InputObservationGroup::single(
+            context_a,
+            InputObservation::ContinuityLoss(ContinuityLoss::Source),
+        ))
+        .expect("source continuity loss should admit");
+
+    assert!(!authority.key_down_in(context_a, &key));
+    assert!(authority.key_down_in(context_b, &key));
+    assert!(!authority.pointer_button_down_in(context_a, PointerButton::Left));
+    assert!(authority.contact_position_in(context_a, contact).is_none());
+    assert_eq!(authority.absolute_pointer_position(SOURCE_A), None);
+    assert_eq!(authority.admission_sequence().get(), 3);
+}
+
+#[test]
+fn device_continuity_loss_preserves_sibling_device_and_source_pointer_state() {
+    let mut authority = InputState::default();
+    let context_a = InputContext::new(SOURCE_A, Some(InputDeviceId::new(10)));
+    let context_b = InputContext::new(SOURCE_A, Some(InputDeviceId::new(11)));
+    let key = PhysicalKeyIdentity::code("KeyDeviceLoss");
+    let contact = ContactId::new(72);
+    let position = Point2::new(17.0, 19.0, CoordinateSpace::WindowPhysicalPixels);
+
+    for context in [context_a, context_b] {
+        authority
+            .admit(InputObservationGroup::new(
+                context,
+                vec![
+                    InputObservation::Keyboard(keyboard_input(
+                        key.clone(),
+                        DigitalState::Pressed,
+                        false,
+                        ObservationOrigin::SourceReport,
+                    )),
+                    InputObservation::PointerButton(PointerButtonInput {
+                        button: PointerButton::Right,
+                        state: DigitalState::Pressed,
+                    }),
+                    InputObservation::Contact(ContactInput {
+                        contact,
+                        phase: ContactPhase::Begin,
+                        position,
+                        pressure: None,
+                        altitude_angle_radians: None,
+                    }),
+                ],
+            ))
+            .expect("device-scoped state should admit");
+    }
+    authority
+        .admit(InputObservationGroup::single(
+            context_a,
+            InputObservation::AbsolutePointerPosition { position },
+        ))
+        .expect("source pointer position should admit");
+
+    authority
+        .admit(InputObservationGroup::single(
+            context_a,
+            InputObservation::ContinuityLoss(ContinuityLoss::Device),
+        ))
+        .expect("device continuity loss should admit");
+
+    assert!(!authority.key_down_in(context_a, &key));
+    assert!(authority.key_down_in(context_b, &key));
+    assert!(!authority.pointer_button_down_in(context_a, PointerButton::Right));
+    assert!(authority.pointer_button_down_in(context_b, PointerButton::Right));
+    assert!(authority.contact_position_in(context_a, contact).is_none());
+    assert_eq!(
+        authority.contact_position_in(context_b, contact),
+        Some(position)
+    );
+    assert_eq!(
+        authority.absolute_pointer_position(SOURCE_A),
+        Some(position)
+    );
+}
+
+#[test]
+fn repeated_continuity_loss_is_state_idempotent_and_ordered() {
+    let mut authority = InputState::default();
+    let key = PhysicalKeyIdentity::code("KeyRepeatedLoss");
+
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Keyboard(keyboard_input(
+                key.clone(),
+                DigitalState::Pressed,
+                false,
+                ObservationOrigin::SourceReport,
+            )),
+        ))
+        .expect("key state should admit");
+
+    for expected_admission in [2, 3] {
+        authority
+            .admit(InputObservationGroup::single(
+                CONTEXT_A,
+                InputObservation::ContinuityLoss(ContinuityLoss::Source),
+            ))
+            .expect("repeated continuity loss should admit deterministically");
+        assert!(!authority.key_down_in(CONTEXT_A, &key));
+        assert_eq!(authority.admission_sequence().get(), expected_admission);
+    }
+}
+
+#[test]
+fn reconciliation_can_reestablish_confirmed_state_after_continuity_loss() {
+    let mut authority = InputState::default();
+    let key = PhysicalKeyIdentity::code("KeyReconcileAfterLoss");
+
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Keyboard(keyboard_input(
+                key.clone(),
+                DigitalState::Pressed,
+                false,
+                ObservationOrigin::SourceReport,
+            )),
+        ))
+        .expect("ordinary key state should admit");
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::ContinuityLoss(ContinuityLoss::Source),
+        ))
+        .expect("continuity loss should admit");
+
+    let reconciliation = authority
+        .admit_keyboard(
+            CONTEXT_A,
+            &keyboard_input(
+                key.clone(),
+                DigitalState::Pressed,
+                false,
+                ObservationOrigin::BackendSyntheticReconciliation,
+            ),
+        )
+        .expect("reconciliation should reestablish confirmed state");
+
+    assert_eq!(reconciliation.transition, DigitalTransition::ReconcileDown);
+    assert!(!reconciliation.was_down_anywhere);
+    assert!(reconciliation.is_down_anywhere);
+    assert!(authority.key_down_in(CONTEXT_A, &key));
+}
+
+#[test]
+fn device_continuity_loss_without_device_rejects_group_atomically() {
+    let mut authority = InputState::default();
+    let key = PhysicalKeyIdentity::code("KeyInvalidDeviceLoss");
+
+    let result = authority.admit(InputObservationGroup::new(
+        CONTEXT_A,
+        vec![
+            InputObservation::Keyboard(keyboard_input(
+                key.clone(),
+                DigitalState::Pressed,
+                false,
+                ObservationOrigin::SourceReport,
+            )),
+            InputObservation::ContinuityLoss(ContinuityLoss::Device),
+        ],
+    ));
+
+    assert_eq!(result, Err(InputError::DeviceContinuityLossRequiresDevice));
+    assert!(!authority.key_down_in(CONTEXT_A, &key));
+    assert_eq!(authority.admission_sequence().get(), 0);
 }
 
 #[test]

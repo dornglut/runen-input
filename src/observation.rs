@@ -1,5 +1,6 @@
 use crate::{
     contact::ContactInput,
+    continuity::ContinuityLoss,
     identity::InputContext,
     keyboard::KeyboardInput,
     measurement::{Point2, RelativeMotionUnit, Vector2},
@@ -21,6 +22,7 @@ pub enum InputObservation {
     Scroll(ScrollInput),
     Contact(ContactInput),
     Tablet(TabletObservation),
+    ContinuityLoss(ContinuityLoss),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -47,4 +49,5 @@ pub enum InputError {
     NonFiniteObservation,
     InvalidMeasurement,
     SourceTimeContextMismatch,
+    DeviceContinuityLossRequiresDevice,
 }

@@ -1,4 +1,5 @@
 use crate::{
+    continuity::ContinuityLoss,
     evidence::SourceTimeUnit,
     measurement::{AnalogMeasurement, Point2},
     observation::{InputError, InputObservation, InputObservationGroup},
@@ -20,6 +21,13 @@ pub(crate) fn validate_group(group: &InputObservationGroup) -> Result<(), InputE
         return Err(InputError::InvalidMeasurement);
     }
     for observation in &group.observations {
+        if matches!(
+            observation,
+            InputObservation::ContinuityLoss(ContinuityLoss::Device)
+        ) && group.context.device.is_none()
+        {
+            return Err(InputError::DeviceContinuityLossRequiresDevice);
+        }
         if let InputObservation::Tablet(tablet) = observation
             && tablet.source_time.is_some_and(|time| {
                 time.context != group.context
@@ -40,7 +48,9 @@ pub(crate) fn validate_group(group: &InputObservationGroup) -> Result<(), InputE
 
 fn is_finite(observation: &InputObservation) -> bool {
     match observation {
-        InputObservation::Keyboard(_) | InputObservation::PointerButton(_) => true,
+        InputObservation::Keyboard(_)
+        | InputObservation::PointerButton(_)
+        | InputObservation::ContinuityLoss(_) => true,
         InputObservation::AbsolutePointerPosition { position } => point_is_finite(*position),
         InputObservation::RelativeMotion { delta, .. } => {
             delta.x.is_finite() && delta.y.is_finite()

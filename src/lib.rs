@@ -5,6 +5,7 @@
 //! text/IME, ECS hosting, and product policy remain outside this crate.
 
 mod contact;
+mod continuity;
 mod digital;
 mod evidence;
 mod identity;
@@ -17,6 +18,7 @@ mod tablet;
 mod validation;
 
 pub use contact::{ContactInput, ContactPhase};
+pub use continuity::ContinuityLoss;
 pub use digital::DigitalState;
 pub use evidence::{DeliveryRole, EvidenceStatus, ObservationOrigin, SourceTime, SourceTimeUnit};
 pub use identity::{ContactId, InputContext, InputDeviceId, InputSourceId, ToolId};

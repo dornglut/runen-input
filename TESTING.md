@@ -18,6 +18,7 @@ The validator covers:
 - standalone source/dependency boundaries;
 - the public observation/state contract;
 - all 15 transferred focused semantic/reducer laws;
+- focused source/device continuity-loss laws;
 - root public-contract integration tests;
 - independent `conformance/downstream` public-API tests;
 - root and downstream rustfmt;
@@ -37,15 +38,20 @@ identity, explicit absent scroll axes, omitted-vs-zero measurement semantics,
 atomic invalid-group rejection, predicted/estimated tablet behavior, stale
 contact clearing, and invalid tablet measurement atomicity.
 
+Additional focused continuity laws prove source-scoped invalidation, device-scoped
+sibling preservation, source-pointer invalidation rules, repeated-loss state
+idempotence, reconciliation after loss, and atomic rejection of device loss
+without a device-bearing context.
+
 ## Independent downstream proof
 
 `conformance/downstream` is a separate Cargo workspace with one dependency:
 the public `runen-input` package through `path = "../.."`.
 
 It proves multi-context key state, aggregate release behavior, reconciliation,
-pointer-button state, direct canonical scroll/contact payload admission, and
-contact state without Runenwerk, winit, RunenECS, RunenUI, or private-module
-access.
+pointer-button state, direct canonical scroll/contact payload admission, scoped
+continuity loss, and contact state without Runenwerk, winit, RunenECS, RunenUI,
+or private-module access.
 
 ## CI
 
