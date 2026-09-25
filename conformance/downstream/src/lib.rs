@@ -2,9 +2,8 @@
 mod tests {
     use runen_input::{
         ContactId, ContactInput, ContactPhase, ContinuityLoss, CoordinateSpace, DigitalState,
-        InputContext,
-        InputDeviceId, InputObservation, InputObservationGroup, InputSourceId, InputState,
-        KeyLocation, KeyboardInput, LogicalKey, NativeLogicalKey, ObservationOrigin,
+        InputContext, InputDeviceId, InputObservation, InputObservationGroup, InputSourceId,
+        InputState, KeyLocation, KeyboardInput, LogicalKey, NativeLogicalKey, ObservationOrigin,
         PhysicalKeyIdentity, Point2, PointerButton, PointerButtonInput, ScrollDelta, ScrollDomain,
         ScrollInput,
     };
