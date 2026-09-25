@@ -44,7 +44,7 @@ InputObservation::Keyboard(KeyboardInput)
 InputObservation::PointerButton(PointerButtonInput)
 InputObservation::Scroll(ScrollInput)
 InputObservation::Contact(ContactInput)
-InputObservation::ContinuityLost(ContinuityLoss)
+InputObservation::ContinuityLoss(ContinuityLoss)
 ```
 
 `ContactInput` carries the semantic `ContactId`; there is no parallel raw-id

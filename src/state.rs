@@ -328,7 +328,7 @@ impl InputState {
                     }
                 }
             }
-            InputObservation::ContinuityLost(loss) => {
+            InputObservation::ContinuityLoss(loss) => {
                 self.apply_continuity_loss(context, loss);
             }
         }

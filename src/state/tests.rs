@@ -393,7 +393,7 @@ fn source_continuity_loss_invalidates_only_the_affected_source_without_fabricate
     authority
         .admit(InputObservationGroup::single(
             context_a,
-            InputObservation::ContinuityLost(ContinuityLoss::Source),
+            InputObservation::ContinuityLoss(ContinuityLoss::Source),
         ))
         .expect("source continuity loss should admit");
 
@@ -450,7 +450,7 @@ fn device_continuity_loss_preserves_sibling_device_and_source_pointer_state() {
     authority
         .admit(InputObservationGroup::single(
             context_a,
-            InputObservation::ContinuityLost(ContinuityLoss::Device),
+            InputObservation::ContinuityLoss(ContinuityLoss::Device),
         ))
         .expect("device continuity loss should admit");
 
@@ -487,7 +487,7 @@ fn repeated_continuity_loss_is_state_idempotent_and_ordered() {
         authority
             .admit(InputObservationGroup::single(
                 CONTEXT_A,
-                InputObservation::ContinuityLost(ContinuityLoss::Source),
+                InputObservation::ContinuityLoss(ContinuityLoss::Source),
             ))
             .expect("repeated continuity loss should admit deterministically");
         assert!(!authority.key_down_in(CONTEXT_A, &key));
@@ -514,7 +514,7 @@ fn reconciliation_can_reestablish_confirmed_state_after_continuity_loss() {
     authority
         .admit(InputObservationGroup::single(
             CONTEXT_A,
-            InputObservation::ContinuityLost(ContinuityLoss::Source),
+            InputObservation::ContinuityLoss(ContinuityLoss::Source),
         ))
         .expect("continuity loss should admit");
 
@@ -550,11 +550,11 @@ fn device_continuity_loss_without_device_rejects_group_atomically() {
                 false,
                 ObservationOrigin::SourceReport,
             )),
-            InputObservation::ContinuityLost(ContinuityLoss::Device),
+            InputObservation::ContinuityLoss(ContinuityLoss::Device),
         ],
     ));
 
-    assert_eq!(result, Err(InputError::DeviceContinuityRequiresDevice));
+    assert_eq!(result, Err(InputError::DeviceContinuityLossRequiresDevice));
     assert!(!authority.key_down_in(CONTEXT_A, &key));
     assert_eq!(authority.admission_sequence().get(), 0);
 }

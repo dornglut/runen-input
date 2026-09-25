@@ -64,7 +64,7 @@ not published merely because internal conformance inspects it. Continuity loss
 does not rewind those ordering counters or reducer-internal control interning.
 
 The public continuity payload is `ContinuityLoss::{Source, Device}`, carried by
-`InputObservation::ContinuityLost`. The enclosing `InputObservationGroup`
+`InputObservation::ContinuityLoss`. The enclosing `InputObservationGroup`
 supplies the affected `InputContext`. Device loss without a device identity is
 invalid and rejects the group atomically.
 

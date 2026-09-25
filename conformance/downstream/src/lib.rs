@@ -147,7 +147,7 @@ mod tests {
         state
             .admit(InputObservationGroup::single(
                 context,
-                InputObservation::ContinuityLost(ContinuityLoss::Source),
+                InputObservation::ContinuityLoss(ContinuityLoss::Source),
             ))
             .expect("source continuity loss should admit");
 

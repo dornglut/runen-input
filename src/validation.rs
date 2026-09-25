@@ -23,10 +23,10 @@ pub(crate) fn validate_group(group: &InputObservationGroup) -> Result<(), InputE
     for observation in &group.observations {
         if matches!(
             observation,
-            InputObservation::ContinuityLost(ContinuityLoss::Device)
+            InputObservation::ContinuityLoss(ContinuityLoss::Device)
         ) && group.context.device.is_none()
         {
-            return Err(InputError::DeviceContinuityRequiresDevice);
+            return Err(InputError::DeviceContinuityLossRequiresDevice);
         }
         if let InputObservation::Tablet(tablet) = observation
             && tablet.source_time.is_some_and(|time| {
@@ -50,7 +50,7 @@ fn is_finite(observation: &InputObservation) -> bool {
     match observation {
         InputObservation::Keyboard(_)
         | InputObservation::PointerButton(_)
-        | InputObservation::ContinuityLost(_) => true,
+        | InputObservation::ContinuityLoss(_) => true,
         InputObservation::AbsolutePointerPosition { position } => point_is_finite(*position),
         InputObservation::RelativeMotion { delta, .. } => {
             delta.x.is_finite() && delta.y.is_finite()

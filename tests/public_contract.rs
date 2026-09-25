@@ -178,7 +178,7 @@ fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
     state
         .admit(InputObservationGroup::single(
             context_a,
-            InputObservation::ContinuityLost(ContinuityLoss::Device),
+            InputObservation::ContinuityLoss(ContinuityLoss::Device),
         ))
         .expect("device continuity loss should admit");
 
@@ -189,7 +189,7 @@ fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
     state
         .admit(InputObservationGroup::single(
             context_b,
-            InputObservation::ContinuityLost(ContinuityLoss::Source),
+            InputObservation::ContinuityLoss(ContinuityLoss::Source),
         ))
         .expect("source continuity loss should admit");
 

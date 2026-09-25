@@ -22,7 +22,7 @@ pub enum InputObservation {
     Scroll(ScrollInput),
     Contact(ContactInput),
     Tablet(TabletObservation),
-    ContinuityLost(ContinuityLoss),
+    ContinuityLoss(ContinuityLoss),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -49,5 +49,5 @@ pub enum InputError {
     NonFiniteObservation,
     InvalidMeasurement,
     SourceTimeContextMismatch,
-    DeviceContinuityRequiresDevice,
+    DeviceContinuityLossRequiresDevice,
 }
