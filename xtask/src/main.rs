@@ -275,7 +275,7 @@ fn validate_standalone_boundary(root: &Path) -> Result<(), String> {
 }
 
 fn validate_product_sources(root: &Path) -> Result<(), String> {
-    for path in rust_source_files(root, "src", "product")? {
+    for path in rust_source_files(root, "src", "product", &[])? {
         let label = path
             .strip_prefix(root)
             .unwrap_or(&path)
@@ -290,7 +290,7 @@ fn validate_product_sources(root: &Path) -> Result<(), String> {
 }
 
 fn validate_conformance_sources(root: &Path) -> Result<(), String> {
-    for path in rust_source_files(root, "conformance/downstream/src", "conformance")? {
+    for path in rust_source_files(root, "conformance/downstream", "conformance", &["target"])? {
         let label = path
             .strip_prefix(root)
             .unwrap_or(&path)
@@ -308,6 +308,7 @@ fn rust_source_files(
     root: &Path,
     relative_root: &str,
     closure_label: &str,
+    ignored_top_level_directories: &[&str],
 ) -> Result<Vec<PathBuf>, String> {
     let source_root = root.join(relative_root);
     if !source_root.is_dir() {
@@ -317,7 +318,12 @@ fn rust_source_files(
     }
 
     let mut paths = Vec::new();
-    collect_rust_source_files(&source_root, &mut paths)?;
+    collect_rust_source_files(
+        &source_root,
+        &source_root,
+        ignored_top_level_directories,
+        &mut paths,
+    )?;
     paths.sort();
 
     if paths.is_empty() {
@@ -329,15 +335,29 @@ fn rust_source_files(
     Ok(paths)
 }
 
-fn collect_rust_source_files(root: &Path, paths: &mut Vec<PathBuf>) -> Result<(), String> {
-    let mut entries = fs::read_dir(root)
-        .map_err(|error| format!("failed to read {}: {error}", root.display()))?
+fn collect_rust_source_files(
+    source_root: &Path,
+    current_root: &Path,
+    ignored_top_level_directories: &[&str],
+    paths: &mut Vec<PathBuf>,
+) -> Result<(), String> {
+    let mut entries = fs::read_dir(current_root)
+        .map_err(|error| format!("failed to read {}: {error}", current_root.display()))?
         .collect::<Result<Vec<_>, _>>()
         .map_err(|error| format!("failed to read source entry: {error}"))?;
     entries.sort_by_key(|entry| entry.path());
 
     for entry in entries {
         let path = entry.path();
+        let ignored_top_level_subtree = current_root == source_root
+            && entry
+                .file_name()
+                .to_str()
+                .is_some_and(|name| ignored_top_level_directories.contains(&name));
+        if ignored_top_level_subtree {
+            continue;
+        }
+
         let file_type = entry
             .file_type()
             .map_err(|error| format!("failed to inspect {}: {error}", path.display()))?;
@@ -349,7 +369,7 @@ fn collect_rust_source_files(root: &Path, paths: &mut Vec<PathBuf>) -> Result<()
             ));
         }
         if file_type.is_dir() {
-            collect_rust_source_files(&path, paths)?;
+            collect_rust_source_files(source_root, &path, ignored_top_level_directories, paths)?;
         } else if path.extension().is_some_and(|extension| extension == "rs") {
             paths.push(path);
         }
@@ -548,6 +568,52 @@ mod tests {
 
         assert!(error.contains("conformance/downstream/src/nested/escape.rs"));
         assert!(error.contains("runenwerk"));
+
+        fs::remove_dir_all(root).expect("temporary source root should be removable");
+    }
+
+    #[test]
+    fn conformance_test_target_cannot_escape_standalone_boundary() {
+        let root = temporary_source_root("conformance-test-boundary");
+        let source = root.join("conformance/downstream/src");
+        let test_target = root.join("conformance/downstream/tests/nested");
+        fs::create_dir_all(&source).expect("temporary conformance source root should be creatable");
+        fs::create_dir_all(&test_target)
+            .expect("temporary conformance test target should be creatable");
+        fs::write(source.join("lib.rs"), "// fixture\n")
+            .expect("temporary conformance crate root should be writable");
+        fs::write(
+            test_target.join("escape.rs"),
+            "include!(\"../../../../src/state.rs\");\n",
+        )
+        .expect("temporary conformance test target should be writable");
+
+        let error = validate_conformance_sources(&root)
+            .expect_err("non-src private-source reach-through must fail conformance scanning");
+
+        assert!(error.contains("conformance/downstream/tests/nested/escape.rs"));
+        assert!(error.contains("include!("));
+
+        fs::remove_dir_all(root).expect("temporary source root should be removable");
+    }
+
+    #[test]
+    fn conformance_cargo_target_output_is_not_authored_source() {
+        let root = temporary_source_root("conformance-target-output");
+        let source = root.join("conformance/downstream/src");
+        let target = root.join("conformance/downstream/target/debug/build");
+        fs::create_dir_all(&source).expect("temporary conformance source root should be creatable");
+        fs::create_dir_all(&target).expect("temporary Cargo target output should be creatable");
+        fs::write(source.join("lib.rs"), "// fixture\n")
+            .expect("temporary conformance crate root should be writable");
+        fs::write(
+            target.join("generated.rs"),
+            "use runenwerk::runtime::Host;\n",
+        )
+        .expect("temporary Cargo target output should be writable");
+
+        validate_conformance_sources(&root)
+            .expect("Cargo target build output must not be treated as authored conformance source");
 
         fs::remove_dir_all(root).expect("temporary source root should be removable");
     }
