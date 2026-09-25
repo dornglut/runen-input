@@ -696,6 +696,172 @@ fn tablet_observation(
     }
 }
 
+fn historical_tablet_observation(
+    phase: ContactPhase,
+    position: Point2,
+) -> TabletObservation {
+    let mut observation = tablet_observation(
+        phase,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    observation.delivery = DeliveryRole::HistoricalCoalesced;
+    observation
+}
+
+#[test]
+fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
+    let mut authority = InputState::default();
+    let contact = ContactId::new(44);
+    let historical_position =
+        Point2::new(3.0, 5.0, CoordinateSpace::WindowPhysicalPixels);
+    let current_position =
+        Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(historical_tablet_observation(
+                ContactPhase::Begin,
+                historical_position,
+            )),
+        ))
+        .expect("historical begin should remain deliverable");
+    assert!(authority.contact_state_in(CONTEXT_A, contact).is_none());
+
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(tablet_observation(
+                ContactPhase::Begin,
+                EvidenceStatus::ObservedConfirmed,
+                current_position,
+                None,
+            )),
+        ))
+        .expect("ordinary-current begin should establish current contact state");
+
+    for phase in [
+        ContactPhase::Begin,
+        ContactPhase::Update,
+        ContactPhase::End,
+        ContactPhase::Cancel,
+    ] {
+        authority
+            .admit(InputObservationGroup::single(
+                CONTEXT_A,
+                InputObservation::Tablet(historical_tablet_observation(
+                    phase,
+                    historical_position,
+                )),
+            ))
+            .expect("historical tablet evidence should remain deliverable");
+        assert_eq!(
+            authority.contact_position_in(CONTEXT_A, contact),
+            Some(current_position)
+        );
+    }
+
+    let mut historical_hover =
+        historical_tablet_observation(ContactPhase::Update, historical_position);
+    historical_hover.presence = ContactPresence::Hover;
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(historical_hover),
+        ))
+        .expect("historical hover should remain deliverable");
+    assert_eq!(
+        authority.contact_position_in(CONTEXT_A, contact),
+        Some(current_position)
+    );
+}
+
+#[test]
+fn mixed_tablet_group_keeps_ordinary_current_sample_authoritative() {
+    let mut authority = InputState::default();
+    let contact = ContactId::new(44);
+    let initial_position =
+        Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+    let current_position =
+        Point2::new(20.0, 24.0, CoordinateSpace::WindowPhysicalPixels);
+
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(tablet_observation(
+                ContactPhase::Begin,
+                EvidenceStatus::ObservedConfirmed,
+                initial_position,
+                None,
+            )),
+        ))
+        .expect("ordinary-current begin should establish current contact state");
+
+    authority
+        .admit(InputObservationGroup::new(
+            CONTEXT_A,
+            vec![
+                InputObservation::Tablet(historical_tablet_observation(
+                    ContactPhase::Update,
+                    Point2::new(2.0, 4.0, CoordinateSpace::WindowPhysicalPixels),
+                )),
+                InputObservation::Tablet(tablet_observation(
+                    ContactPhase::Update,
+                    EvidenceStatus::ObservedConfirmed,
+                    current_position,
+                    None,
+                )),
+                InputObservation::Tablet(historical_tablet_observation(
+                    ContactPhase::Update,
+                    Point2::new(3.0, 5.0, CoordinateSpace::WindowPhysicalPixels),
+                )),
+            ],
+        ))
+        .expect("mixed historical/current tablet group should admit");
+
+    assert_eq!(
+        authority.contact_position_in(CONTEXT_A, contact),
+        Some(current_position)
+    );
+}
+
+#[test]
+fn ordinary_current_confirmed_tablet_terminal_phases_clear_contact_state() {
+    for phase in [ContactPhase::End, ContactPhase::Cancel] {
+        let mut authority = InputState::default();
+        let contact = ContactId::new(44);
+        let position =
+            Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+
+        authority
+            .admit(InputObservationGroup::single(
+                CONTEXT_A,
+                InputObservation::Tablet(tablet_observation(
+                    ContactPhase::Begin,
+                    EvidenceStatus::ObservedConfirmed,
+                    position,
+                    None,
+                )),
+            ))
+            .expect("ordinary-current begin should establish current contact state");
+        authority
+            .admit(InputObservationGroup::single(
+                CONTEXT_A,
+                InputObservation::Tablet(tablet_observation(
+                    phase,
+                    EvidenceStatus::ObservedConfirmed,
+                    position,
+                    None,
+                )),
+            ))
+            .expect("ordinary-current terminal phase should admit");
+
+        assert!(authority.contact_state_in(CONTEXT_A, contact).is_none());
+    }
+}
+
 #[test]
 fn predicted_tablet_observation_does_not_mutate_confirmed_contact_state() {
     let mut authority = InputState::default();
