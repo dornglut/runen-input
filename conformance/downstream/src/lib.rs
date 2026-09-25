@@ -7,8 +7,8 @@ mod tests {
         InputObservationGroup, InputSourceId, InputState, InputToolKind, KeyLocation,
         KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
         PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton, PointerButtonInput,
-        ScrollDelta, ScrollDomain, ScrollInput, TabletCapabilities, TabletObservation, ToolId,
-        Vector2,
+        ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit, TabletCapabilities,
+        TabletObservation, ToolId, Vector2,
     };
 
     fn keyboard(
@@ -207,4 +207,75 @@ mod tests {
         assert_eq!(state.contact_position_in(context, contact), None);
         assert_eq!(state.absolute_pointer_position(source), None);
     }
+
+    #[test]
+    fn independent_consumer_distinguishes_source_time_context_and_unit_failures() {
+        let context = InputContext::new(InputSourceId::new(61), Some(InputDeviceId::new(6)));
+        let other_context =
+            InputContext::new(InputSourceId::new(62), Some(InputDeviceId::new(7)));
+        let position = Point2::new(7.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+        let base = TabletObservation {
+            contact: ContactId::new(13),
+            tool: Some(ToolId::new(4)),
+            tool_kind: InputToolKind::Pen,
+            phase: ContactPhase::Begin,
+            presence: ContactPresence::Contact,
+            position,
+            delta: Vector2::new(0.0, 0.0),
+            pressure: None,
+            tangential_pressure: None,
+            tilt: None,
+            twist: None,
+            controls: PhysicalTabletControls::default(),
+            capabilities: TabletCapabilities::default(),
+            source_time: Some(SourceTime::new(
+                context,
+                9,
+                SourceTimeUnit::NativeTicks {
+                    ticks_per_second: 120,
+                },
+            )),
+            evidence: EvidenceStatus::ObservedConfirmed,
+            delivery: DeliveryRole::OrdinaryCurrent,
+            origin: ObservationOrigin::SourceReport,
+        };
+
+        InputState::default()
+            .admit(&InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(base.clone()),
+            ))
+            .expect("valid native source time should admit");
+
+        let mut wrong_context = base.clone();
+        wrong_context.source_time = Some(SourceTime::new(
+            other_context,
+            9,
+            SourceTimeUnit::Milliseconds,
+        ));
+        assert_eq!(
+            InputState::default().admit(&InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(wrong_context),
+            )),
+            Err(InputError::SourceTimeContextMismatch)
+        );
+
+        let mut invalid_unit = base;
+        invalid_unit.source_time = Some(SourceTime::new(
+            context,
+            9,
+            SourceTimeUnit::NativeTicks {
+                ticks_per_second: 0,
+            },
+        ));
+        assert_eq!(
+            InputState::default().admit(&InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(invalid_unit),
+            )),
+            Err(InputError::InvalidSourceTimeUnit)
+        );
+    }
+
 }

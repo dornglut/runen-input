@@ -50,5 +50,6 @@ pub enum InputError {
     InvalidMeasurement,
     UnsupportedTabletCapabilityEvidence,
     SourceTimeContextMismatch,
+    InvalidSourceTimeUnit,
     DeviceContinuityLossRequiresDevice,
 }
