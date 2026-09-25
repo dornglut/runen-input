@@ -48,6 +48,7 @@ impl InputObservationGroup {
 pub enum InputError {
     NonFiniteObservation,
     InvalidMeasurement,
+    UnsupportedTabletCapabilityEvidence,
     SourceTimeContextMismatch,
     DeviceContinuityLossRequiresDevice,
 }

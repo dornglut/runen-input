@@ -50,6 +50,10 @@ authorities.
 - absolute pointer position is not reconstructed from relative motion;
 - absent scroll axes remain absent rather than measured zero;
 - measurement domains preserve uncertainty;
+- tablet capability knowledge distinguishes supported, unsupported, and unknown;
+  sample omission is independent of capability knowledge, while explicit unsupported
+  capability claims reject atomically when the same observation carries conflicting
+  measurement, lifecycle, control, historical, or prediction evidence;
 - predicted, estimated, and historical/coalesced tablet samples remain deliverable
   evidence but do not mutate current confirmed contact state; only observed-confirmed
   ordinary-current tablet observations may mutate that current state;

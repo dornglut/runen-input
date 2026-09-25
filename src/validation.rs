@@ -1,8 +1,9 @@
 use crate::{
     continuity::ContinuityLoss,
-    evidence::SourceTimeUnit,
+    evidence::{DeliveryRole, EvidenceStatus, SourceTimeUnit},
     measurement::{AnalogMeasurement, Point2},
     observation::{InputError, InputObservation, InputObservationGroup},
+    tablet::{CapabilityKnowledge, ContactPresence, InputToolKind},
 };
 
 pub(crate) fn validate_group(group: &InputObservationGroup) -> Result<(), InputError> {
@@ -19,6 +20,13 @@ pub(crate) fn validate_group(group: &InputObservationGroup) -> Result<(), InputE
         .any(|observation| !has_valid_measurements(observation))
     {
         return Err(InputError::InvalidMeasurement);
+    }
+    if group
+        .observations
+        .iter()
+        .any(|observation| !has_consistent_capability_evidence(observation))
+    {
+        return Err(InputError::UnsupportedTabletCapabilityEvidence);
     }
     for observation in &group.observations {
         if matches!(
@@ -115,6 +123,46 @@ fn has_valid_measurements(observation: &InputObservation) -> bool {
         }
         _ => true,
     }
+}
+
+fn has_consistent_capability_evidence(observation: &InputObservation) -> bool {
+    let InputObservation::Tablet(observation) = observation else {
+        return true;
+    };
+
+    capability_allows_evidence(
+        observation.capabilities.pressure,
+        observation.pressure.is_some(),
+    ) && capability_allows_evidence(observation.capabilities.tilt, observation.tilt.is_some())
+        && capability_allows_evidence(observation.capabilities.twist, observation.twist.is_some())
+        && capability_allows_evidence(
+            observation.capabilities.tangential_pressure,
+            observation.tangential_pressure.is_some(),
+        )
+        && capability_allows_evidence(
+            observation.capabilities.hover,
+            observation.presence == ContactPresence::Hover,
+        )
+        && capability_allows_evidence(
+            observation.capabilities.eraser,
+            observation.controls.eraser || observation.tool_kind == InputToolKind::Eraser,
+        )
+        && capability_allows_evidence(
+            observation.capabilities.barrel_controls,
+            observation.controls.barrel_primary || observation.controls.barrel_secondary,
+        )
+        && capability_allows_evidence(
+            observation.capabilities.historical_samples,
+            observation.delivery == DeliveryRole::HistoricalCoalesced,
+        )
+        && capability_allows_evidence(
+            observation.capabilities.predicted_samples,
+            observation.evidence == EvidenceStatus::PredictedProvisional,
+        )
+}
+
+fn capability_allows_evidence(capability: CapabilityKnowledge, evidence_present: bool) -> bool {
+    !evidence_present || capability != CapabilityKnowledge::Unsupported
 }
 
 fn point_is_finite(point: Point2) -> bool {

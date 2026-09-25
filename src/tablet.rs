@@ -17,17 +17,35 @@ pub enum InputToolKind {
     Unknown,
 }
 
+/// Knowledge about whether a tablet source can establish one capability.
+///
+/// `Unknown` means support has not been established. It is distinct from
+/// `Unsupported`: an observation may carry concrete evidence while capability
+/// metadata remains unknown, but explicit `Unsupported` knowledge cannot
+/// coexist with evidence that requires the capability.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum CapabilityKnowledge {
+    #[default]
+    Unknown,
+    Supported,
+    Unsupported,
+}
+
+/// Independently established capability knowledge for one tablet observation.
+///
+/// Capability knowledge describes what the source can establish. It does not
+/// require every sample to contain a value for every supported capability.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct TabletCapabilities {
-    pub pressure: bool,
-    pub tilt: bool,
-    pub twist: bool,
-    pub tangential_pressure: bool,
-    pub hover: bool,
-    pub eraser: bool,
-    pub barrel_controls: bool,
-    pub historical_samples: bool,
-    pub predicted_samples: bool,
+    pub pressure: CapabilityKnowledge,
+    pub tilt: CapabilityKnowledge,
+    pub twist: CapabilityKnowledge,
+    pub tangential_pressure: CapabilityKnowledge,
+    pub hover: CapabilityKnowledge,
+    pub eraser: CapabilityKnowledge,
+    pub barrel_controls: CapabilityKnowledge,
+    pub historical_samples: CapabilityKnowledge,
+    pub predicted_samples: CapabilityKnowledge,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,6 +91,7 @@ pub struct TabletObservation {
     pub tilt: Option<StylusTilt>,
     pub twist: Option<AnalogMeasurement>,
     pub controls: PhysicalTabletControls,
+    /// Capability knowledge supplied independently from this sample's values.
     pub capabilities: TabletCapabilities,
     pub source_time: Option<SourceTime>,
     pub evidence: EvidenceStatus,

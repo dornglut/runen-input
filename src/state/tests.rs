@@ -1,12 +1,12 @@
 use super::{DigitalTransition, InputState};
 use crate::{
-    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, ContinuityLoss,
-    CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId,
-    InputError, InputObservation, InputObservationGroup, InputSourceId, InputToolKind, KeyLocation,
-    KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
-    PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton, PointerButtonInput,
-    RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit,
-    TabletCapabilities, TabletObservation, ToolId, Vector2,
+    AnalogMeasurement, CapabilityKnowledge, ContactId, ContactInput, ContactPhase, ContactPresence,
+    ContinuityLoss, CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext,
+    InputDeviceId, InputError, InputObservation, InputObservationGroup, InputSourceId,
+    InputToolKind, KeyLocation, KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey,
+    ObservationOrigin, PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton,
+    PointerButtonInput, RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime,
+    SourceTimeUnit, StylusTilt, TabletCapabilities, TabletObservation, ToolId, Vector2,
 };
 
 const SOURCE_A: InputSourceId = InputSourceId::new(1);
@@ -1044,4 +1044,197 @@ fn invalid_tablet_measurement_rejects_group_without_partial_state() {
     assert_eq!(result, Err(InputError::InvalidMeasurement));
     assert_eq!(authority.active_contact_count(SOURCE_A), 0);
     assert_eq!(authority.admission_sequence().get(), 0);
+}
+
+#[test]
+fn unknown_tablet_capability_knowledge_remains_distinct_from_unsupported() {
+    let mut authority = InputState::default();
+    let position = Point2::new(12.0, 14.0, CoordinateSpace::WindowPhysicalPixels);
+    let observation = tablet_observation(
+        ContactPhase::Begin,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        Some(AnalogMeasurement::new(
+            0.0,
+            MeasurementDomain::NormalizedUnitInterval,
+        )),
+    );
+
+    assert_eq!(
+        observation.capabilities.pressure,
+        CapabilityKnowledge::Unknown
+    );
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(observation),
+        ))
+        .expect("unknown capability metadata must not erase concrete sample evidence");
+    assert_eq!(
+        authority.contact_position_in(CONTEXT_A, ContactId::new(44)),
+        Some(position)
+    );
+
+    let mut supported_without_sample = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    supported_without_sample.capabilities.pressure = CapabilityKnowledge::Supported;
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(supported_without_sample),
+        ))
+        .expect("supported capability does not require every sample to carry a value");
+
+    let mut unsupported_without_sample = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    unsupported_without_sample.capabilities.pressure = CapabilityKnowledge::Unsupported;
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(unsupported_without_sample),
+        ))
+        .expect("unsupported capability may omit the corresponding sample value");
+}
+
+#[test]
+fn explicit_unsupported_tablet_capabilities_reject_conflicting_evidence_atomically() {
+    let position = Point2::new(20.0, 30.0, CoordinateSpace::WindowPhysicalPixels);
+    let mut cases = Vec::new();
+
+    let mut pressure = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        Some(AnalogMeasurement::new(
+            0.5,
+            MeasurementDomain::NormalizedUnitInterval,
+        )),
+    );
+    pressure.capabilities.pressure = CapabilityKnowledge::Unsupported;
+    cases.push(("pressure", pressure));
+
+    let mut tilt = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    tilt.tilt = Some(StylusTilt::new(10.0, -5.0));
+    tilt.capabilities.tilt = CapabilityKnowledge::Unsupported;
+    cases.push(("tilt", tilt));
+
+    let mut twist = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    twist.twist = Some(AnalogMeasurement::new(
+        45.0,
+        MeasurementDomain::Degrees {
+            min: 0.0,
+            max: 360.0,
+        },
+    ));
+    twist.capabilities.twist = CapabilityKnowledge::Unsupported;
+    cases.push(("twist", twist));
+
+    let mut tangential = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    tangential.tangential_pressure = Some(AnalogMeasurement::new(
+        -0.25,
+        MeasurementDomain::SignedNormalizedUnitInterval,
+    ));
+    tangential.capabilities.tangential_pressure = CapabilityKnowledge::Unsupported;
+    cases.push(("tangential pressure", tangential));
+
+    let mut hover = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    hover.presence = ContactPresence::Hover;
+    hover.capabilities.hover = CapabilityKnowledge::Unsupported;
+    cases.push(("hover", hover));
+
+    let mut eraser_tool = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    eraser_tool.tool_kind = InputToolKind::Eraser;
+    eraser_tool.capabilities.eraser = CapabilityKnowledge::Unsupported;
+    cases.push(("eraser tool", eraser_tool));
+
+    let mut eraser_control = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    eraser_control.controls.eraser = true;
+    eraser_control.capabilities.eraser = CapabilityKnowledge::Unsupported;
+    cases.push(("eraser control", eraser_control));
+
+    let mut barrel = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    barrel.controls.barrel_primary = true;
+    barrel.capabilities.barrel_controls = CapabilityKnowledge::Unsupported;
+    cases.push(("barrel control", barrel));
+
+    let mut historical = historical_tablet_observation(ContactPhase::Update, position);
+    historical.capabilities.historical_samples = CapabilityKnowledge::Unsupported;
+    cases.push(("historical delivery", historical));
+
+    let mut predicted = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::PredictedProvisional,
+        position,
+        None,
+    );
+    predicted.capabilities.predicted_samples = CapabilityKnowledge::Unsupported;
+    cases.push(("predicted evidence", predicted));
+
+    for (label, observation) in cases {
+        let mut authority = InputState::default();
+        let key = PhysicalKeyIdentity::code(format!("KeyCapabilityConflict:{label}"));
+        let result = authority.admit(InputObservationGroup::new(
+            CONTEXT_A,
+            vec![
+                InputObservation::Keyboard(keyboard_input(
+                    key.clone(),
+                    DigitalState::Pressed,
+                    false,
+                    ObservationOrigin::SourceReport,
+                )),
+                InputObservation::Tablet(observation),
+            ],
+        ));
+
+        assert_eq!(
+            result,
+            Err(InputError::UnsupportedTabletCapabilityEvidence),
+            "{label}"
+        );
+        assert!(!authority.key_down_in(CONTEXT_A, &key), "{label}");
+        assert_eq!(authority.admission_sequence().get(), 0, "{label}");
+    }
 }

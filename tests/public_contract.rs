@@ -1,8 +1,8 @@
 use runen_input::{
-    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, ContinuityLoss,
-    CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId,
-    InputError, InputObservation, InputObservationGroup, InputSourceId, InputState, InputToolKind,
-    KeyLocation, KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey,
+    AnalogMeasurement, CapabilityKnowledge, ContactId, ContactInput, ContactPhase, ContactPresence,
+    ContinuityLoss, CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext,
+    InputDeviceId, InputError, InputObservation, InputObservationGroup, InputSourceId, InputState,
+    InputToolKind, KeyLocation, KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey,
     NativePhysicalKeyCode, ObservationOrigin, PhysicalKeyIdentity, PhysicalTabletControls, Point2,
     PointerButton, PointerButtonInput, RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput,
     ScrollPhase, SourceTime, SourceTimeUnit, StylusTilt, TabletCapabilities, TabletObservation,
@@ -14,6 +14,7 @@ fn assert_public_type<T>() {}
 #[test]
 fn crate_root_exports_the_complete_accepted_public_surface() {
     assert_public_type::<AnalogMeasurement>();
+    assert_public_type::<CapabilityKnowledge>();
     assert_public_type::<ContactId>();
     assert_public_type::<ContactInput>();
     assert_public_type::<ContactPhase>();
@@ -195,4 +196,59 @@ fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
 
     assert!(!state.key_down_in(context_b, &key));
     assert_eq!(state.absolute_pointer_position(source), None);
+}
+
+#[test]
+fn public_tablet_capability_knowledge_preserves_unknown_and_rejects_explicit_conflict() {
+    let context = InputContext::new(InputSourceId::new(31), Some(InputDeviceId::new(9)));
+    let position = Point2::new(15.0, 25.0, CoordinateSpace::WindowPhysicalPixels);
+    let observation = TabletObservation {
+        contact: ContactId::new(7),
+        tool: Some(ToolId::new(3)),
+        tool_kind: InputToolKind::Pen,
+        phase: ContactPhase::Begin,
+        presence: ContactPresence::Contact,
+        position,
+        delta: Vector2::new(0.0, 0.0),
+        pressure: Some(AnalogMeasurement::new(
+            0.4,
+            MeasurementDomain::NormalizedUnitInterval,
+        )),
+        tangential_pressure: None,
+        tilt: None,
+        twist: None,
+        controls: PhysicalTabletControls::default(),
+        capabilities: TabletCapabilities::default(),
+        source_time: None,
+        evidence: EvidenceStatus::ObservedConfirmed,
+        delivery: DeliveryRole::OrdinaryCurrent,
+        origin: ObservationOrigin::SourceReport,
+    };
+
+    assert_eq!(
+        observation.capabilities.pressure,
+        CapabilityKnowledge::Unknown
+    );
+    let mut state = InputState::default();
+    state
+        .admit(InputObservationGroup::single(
+            context,
+            InputObservation::Tablet(observation.clone()),
+        ))
+        .expect("unknown capability metadata may accompany concrete sample evidence");
+    assert_eq!(
+        state.contact_position_in(context, ContactId::new(7)),
+        Some(position)
+    );
+
+    let mut unsupported = observation;
+    unsupported.capabilities.pressure = CapabilityKnowledge::Unsupported;
+    let mut rejected = InputState::default();
+    assert_eq!(
+        rejected.admit(InputObservationGroup::single(
+            context,
+            InputObservation::Tablet(unsupported),
+        )),
+        Err(InputError::UnsupportedTabletCapabilityEvidence)
+    );
 }
