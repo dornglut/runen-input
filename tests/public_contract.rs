@@ -82,7 +82,7 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
     let mut state = InputState::default();
 
     state
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::Keyboard(keyboard(
                 key.clone(),
@@ -96,7 +96,7 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
     assert!(!state.key_down_in(context_b, &key));
 
     state
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_b,
             InputObservation::PointerButton(PointerButtonInput {
                 button: PointerButton::Left,
@@ -109,7 +109,7 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
 
     let position = Point2::new(12.0, 18.0, CoordinateSpace::WindowPhysicalPixels);
     state
-        .admit(InputObservationGroup::new(
+        .admit(&InputObservationGroup::new(
             context_a,
             vec![
                 InputObservation::AbsolutePointerPosition { position },
@@ -136,7 +136,7 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
     };
     assert_eq!(scroll.delta.horizontal, None);
     state
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::Scroll(scroll),
         ))
@@ -146,6 +146,29 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
         MeasurementDomain::calibrated_force(5.0).max_possible_force(),
         Some(5.0)
     );
+}
+
+#[test]
+fn public_admission_borrows_the_exact_group_without_consuming_it() {
+    let context = InputContext::new(InputSourceId::new(19), Some(InputDeviceId::new(4)));
+    let key = PhysicalKeyIdentity::code("KeyBorrowedAdmission");
+    let group = InputObservationGroup::single(
+        context,
+        InputObservation::Keyboard(keyboard(
+            key.clone(),
+            DigitalState::Pressed,
+            ObservationOrigin::SourceReport,
+        )),
+    );
+    let mut state = InputState::default();
+
+    state
+        .admit(&group)
+        .expect("borrowed observation group should admit");
+
+    assert_eq!(group.context, context);
+    assert_eq!(group.observations.len(), 1);
+    assert!(state.key_down_in(context, &key));
 }
 
 #[test]
@@ -159,7 +182,7 @@ fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
 
     for context in [context_a, context_b] {
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context,
                 InputObservation::Keyboard(keyboard(
                     key.clone(),
@@ -170,14 +193,14 @@ fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
             .expect("device key state should admit");
     }
     state
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::AbsolutePointerPosition { position },
         ))
         .expect("source pointer state should admit");
 
     state
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::ContinuityLoss(ContinuityLoss::Device),
         ))
@@ -188,7 +211,7 @@ fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
     assert_eq!(state.absolute_pointer_position(source), Some(position));
 
     state
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_b,
             InputObservation::ContinuityLoss(ContinuityLoss::Source),
         ))
@@ -231,7 +254,7 @@ fn public_tablet_capability_knowledge_preserves_unknown_and_rejects_explicit_con
     );
     let mut state = InputState::default();
     state
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context,
             InputObservation::Tablet(observation.clone()),
         ))
@@ -245,7 +268,7 @@ fn public_tablet_capability_knowledge_preserves_unknown_and_rejects_explicit_con
     unsupported.capabilities.pressure = CapabilityKnowledge::Unsupported;
     let mut rejected = InputState::default();
     assert_eq!(
-        rejected.admit(InputObservationGroup::single(
+        rejected.admit(&InputObservationGroup::single(
             context,
             InputObservation::Tablet(unsupported),
         )),

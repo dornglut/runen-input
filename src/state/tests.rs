@@ -19,7 +19,7 @@ fn source_and_admission_sequences_are_distinct_and_deterministic() {
     let mut authority = InputState::default();
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 PhysicalKeyIdentity::code("KeyControl"),
@@ -33,7 +33,7 @@ fn source_and_admission_sequences_are_distinct_and_deterministic() {
     assert_eq!(authority.admission_sequence().get(), 1);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_B,
             InputObservation::RelativeMotion {
                 delta: Vector2::new(1.0, -1.0),
@@ -45,7 +45,7 @@ fn source_and_admission_sequences_are_distinct_and_deterministic() {
     assert_eq!(authority.admission_sequence().get(), 2);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 PhysicalKeyIdentity::code("KeyControl"),
@@ -64,7 +64,7 @@ fn down_then_up_remain_two_admissions_even_when_final_state_matches_initial() {
     let mut authority = InputState::default();
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 PhysicalKeyIdentity::code("KeyControl"),
@@ -78,7 +78,7 @@ fn down_then_up_remain_two_admissions_even_when_final_state_matches_initial() {
     assert_eq!(authority.admission_sequence().get(), 1);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 PhysicalKeyIdentity::code("KeyControl"),
@@ -291,7 +291,7 @@ fn same_control_on_distinct_devices_does_not_alias() {
     let context_b = InputContext::new(SOURCE_A, Some(device_b));
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::Keyboard(keyboard_input(
                 PhysicalKeyIdentity::code("KeyControl"),
@@ -315,7 +315,7 @@ fn same_contact_id_on_distinct_contexts_does_not_alias() {
     let position = Point2::new(4.0, 5.0, CoordinateSpace::WindowPhysicalPixels);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::Contact(ContactInput {
                 contact,
@@ -327,7 +327,7 @@ fn same_contact_id_on_distinct_contexts_does_not_alias() {
         ))
         .expect("context-A contact should admit");
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_b,
             InputObservation::Contact(ContactInput {
                 contact,
@@ -353,7 +353,7 @@ fn source_continuity_loss_invalidates_only_the_affected_source_without_fabricate
     let position = Point2::new(7.0, 11.0, CoordinateSpace::WindowPhysicalPixels);
 
     authority
-        .admit(InputObservationGroup::new(
+        .admit(&InputObservationGroup::new(
             context_a,
             vec![
                 InputObservation::Keyboard(keyboard_input(
@@ -378,7 +378,7 @@ fn source_continuity_loss_invalidates_only_the_affected_source_without_fabricate
         ))
         .expect("source-A state should admit");
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_b,
             InputObservation::Keyboard(keyboard_input(
                 key.clone(),
@@ -391,7 +391,7 @@ fn source_continuity_loss_invalidates_only_the_affected_source_without_fabricate
 
     assert_eq!(authority.admission_sequence().get(), 2);
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::ContinuityLoss(ContinuityLoss::Source),
         ))
@@ -416,7 +416,7 @@ fn device_continuity_loss_preserves_sibling_device_and_source_pointer_state() {
 
     for context in [context_a, context_b] {
         authority
-            .admit(InputObservationGroup::new(
+            .admit(&InputObservationGroup::new(
                 context,
                 vec![
                     InputObservation::Keyboard(keyboard_input(
@@ -441,14 +441,14 @@ fn device_continuity_loss_preserves_sibling_device_and_source_pointer_state() {
             .expect("device-scoped state should admit");
     }
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::AbsolutePointerPosition { position },
         ))
         .expect("source pointer position should admit");
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             context_a,
             InputObservation::ContinuityLoss(ContinuityLoss::Device),
         ))
@@ -475,7 +475,7 @@ fn repeated_continuity_loss_is_state_idempotent_and_ordered() {
     let key = PhysicalKeyIdentity::code("KeyRepeatedLoss");
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 key.clone(),
@@ -488,7 +488,7 @@ fn repeated_continuity_loss_is_state_idempotent_and_ordered() {
 
     for expected_admission in [2, 3] {
         authority
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 CONTEXT_A,
                 InputObservation::ContinuityLoss(ContinuityLoss::Source),
             ))
@@ -504,7 +504,7 @@ fn reconciliation_can_reestablish_confirmed_state_after_continuity_loss() {
     let key = PhysicalKeyIdentity::code("KeyReconcileAfterLoss");
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 key.clone(),
@@ -515,7 +515,7 @@ fn reconciliation_can_reestablish_confirmed_state_after_continuity_loss() {
         ))
         .expect("ordinary key state should admit");
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::ContinuityLoss(ContinuityLoss::Source),
         ))
@@ -544,7 +544,7 @@ fn device_continuity_loss_without_device_rejects_group_atomically() {
     let mut authority = InputState::default();
     let key = PhysicalKeyIdentity::code("KeyInvalidDeviceLoss");
 
-    let result = authority.admit(InputObservationGroup::new(
+    let result = authority.admit(&InputObservationGroup::new(
         CONTEXT_A,
         vec![
             InputObservation::Keyboard(keyboard_input(
@@ -567,7 +567,7 @@ fn reconciliation_changes_confirmed_state_without_an_ordinary_edge() {
     let mut authority = InputState::default();
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 PhysicalKeyIdentity::code("KeyControl"),
@@ -580,7 +580,7 @@ fn reconciliation_changes_confirmed_state_without_an_ordinary_edge() {
     assert!(authority.key_down_in(CONTEXT_A, &PhysicalKeyIdentity::code("KeyControl")));
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Keyboard(keyboard_input(
                 PhysicalKeyIdentity::code("KeyControl"),
@@ -644,7 +644,7 @@ fn omitted_pressure_remains_distinct_from_measured_zero() {
 fn invalid_numeric_group_is_rejected_atomically() {
     let mut authority = InputState::default();
 
-    let result = authority.admit(InputObservationGroup::new(
+    let result = authority.admit(&InputObservationGroup::new(
         CONTEXT_A,
         vec![
             InputObservation::Keyboard(keyboard_input(
@@ -711,7 +711,7 @@ fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
     let current_position = Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(historical_tablet_observation(
                 ContactPhase::Begin,
@@ -722,7 +722,7 @@ fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
     assert!(authority.contact_state_in(CONTEXT_A, contact).is_none());
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Begin,
@@ -740,7 +740,7 @@ fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
         ContactPhase::Cancel,
     ] {
         authority
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 CONTEXT_A,
                 InputObservation::Tablet(historical_tablet_observation(phase, historical_position)),
             ))
@@ -755,7 +755,7 @@ fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
         historical_tablet_observation(ContactPhase::Update, historical_position);
     historical_hover.presence = ContactPresence::Hover;
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(historical_hover),
         ))
@@ -774,7 +774,7 @@ fn mixed_tablet_group_keeps_ordinary_current_sample_authoritative() {
     let current_position = Point2::new(20.0, 24.0, CoordinateSpace::WindowPhysicalPixels);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Begin,
@@ -786,7 +786,7 @@ fn mixed_tablet_group_keeps_ordinary_current_sample_authoritative() {
         .expect("ordinary-current begin should establish current contact state");
 
     authority
-        .admit(InputObservationGroup::new(
+        .admit(&InputObservationGroup::new(
             CONTEXT_A,
             vec![
                 InputObservation::Tablet(historical_tablet_observation(
@@ -821,7 +821,7 @@ fn ordinary_current_confirmed_tablet_terminal_phases_clear_contact_state() {
         let position = Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
 
         authority
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 CONTEXT_A,
                 InputObservation::Tablet(tablet_observation(
                     ContactPhase::Begin,
@@ -832,7 +832,7 @@ fn ordinary_current_confirmed_tablet_terminal_phases_clear_contact_state() {
             ))
             .expect("ordinary-current begin should establish current contact state");
         authority
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 CONTEXT_A,
                 InputObservation::Tablet(tablet_observation(
                     phase,
@@ -854,7 +854,7 @@ fn predicted_tablet_observation_does_not_mutate_confirmed_contact_state() {
     let contact = ContactId::new(44);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Begin,
@@ -868,7 +868,7 @@ fn predicted_tablet_observation_does_not_mutate_confirmed_contact_state() {
         ))
         .expect("confirmed tablet observation should admit");
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Update,
@@ -898,7 +898,7 @@ fn estimated_tablet_observations_never_mutate_confirmed_contact_state() {
     let contact = ContactId::new(44);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Begin,
@@ -911,7 +911,7 @@ fn estimated_tablet_observations_never_mutate_confirmed_contact_state() {
     assert!(authority.contact_state_in(CONTEXT_A, contact).is_none());
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Begin,
@@ -923,7 +923,7 @@ fn estimated_tablet_observations_never_mutate_confirmed_contact_state() {
         .expect("confirmed begin should admit");
     let revised_position = Point2::new(99.0, 101.0, CoordinateSpace::WindowPhysicalPixels);
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Update,
@@ -942,7 +942,7 @@ fn estimated_tablet_observations_never_mutate_confirmed_contact_state() {
     );
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::End,
@@ -962,7 +962,7 @@ fn confirmed_hover_and_out_of_range_clear_stale_tablet_contact_state() {
     let position = Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Begin,
@@ -980,7 +980,7 @@ fn confirmed_hover_and_out_of_range_clear_stale_tablet_contact_state() {
     );
     hover.presence = ContactPresence::Hover;
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(hover),
         ))
@@ -988,7 +988,7 @@ fn confirmed_hover_and_out_of_range_clear_stale_tablet_contact_state() {
     assert!(authority.contact_state_in(CONTEXT_A, contact).is_none());
 
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(tablet_observation(
                 ContactPhase::Begin,
@@ -1006,7 +1006,7 @@ fn confirmed_hover_and_out_of_range_clear_stale_tablet_contact_state() {
     );
     out_of_range.presence = ContactPresence::OutOfRange;
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(out_of_range),
         ))
@@ -1017,7 +1017,7 @@ fn confirmed_hover_and_out_of_range_clear_stale_tablet_contact_state() {
 #[test]
 fn invalid_tablet_measurement_rejects_group_without_partial_state() {
     let mut authority = InputState::default();
-    let result = authority.admit(InputObservationGroup::new(
+    let result = authority.admit(&InputObservationGroup::new(
         CONTEXT_A,
         vec![
             InputObservation::Tablet(tablet_observation(
@@ -1065,7 +1065,7 @@ fn unknown_tablet_capability_knowledge_remains_distinct_from_unsupported() {
         CapabilityKnowledge::Unknown
     );
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(observation),
         ))
@@ -1083,7 +1083,7 @@ fn unknown_tablet_capability_knowledge_remains_distinct_from_unsupported() {
     );
     supported_without_sample.capabilities.pressure = CapabilityKnowledge::Supported;
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(supported_without_sample),
         ))
@@ -1097,7 +1097,7 @@ fn unknown_tablet_capability_knowledge_remains_distinct_from_unsupported() {
     );
     unsupported_without_sample.capabilities.pressure = CapabilityKnowledge::Unsupported;
     authority
-        .admit(InputObservationGroup::single(
+        .admit(&InputObservationGroup::single(
             CONTEXT_A,
             InputObservation::Tablet(unsupported_without_sample),
         ))
@@ -1216,7 +1216,7 @@ fn explicit_unsupported_tablet_capabilities_reject_conflicting_evidence_atomical
     for (label, observation) in cases {
         let mut authority = InputState::default();
         let key = PhysicalKeyIdentity::code(format!("KeyCapabilityConflict:{label}"));
-        let result = authority.admit(InputObservationGroup::new(
+        let result = authority.admit(&InputObservationGroup::new(
             CONTEXT_A,
             vec![
                 InputObservation::Keyboard(keyboard_input(
