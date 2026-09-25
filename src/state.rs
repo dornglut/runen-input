@@ -4,7 +4,7 @@ use crate::{
     contact::ContactPhase,
     continuity::ContinuityLoss,
     digital::DigitalState,
-    evidence::{EvidenceStatus, ObservationOrigin},
+    evidence::{DeliveryRole, EvidenceStatus, ObservationOrigin},
     identity::{ContactId, InputContext, InputDeviceId, InputSourceId},
     keyboard::PhysicalKeyIdentity,
     measurement::Point2,
@@ -313,7 +313,9 @@ impl InputState {
                 }
             },
             InputObservation::Tablet(observation) => {
-                if observation.evidence != EvidenceStatus::ObservedConfirmed {
+                if observation.evidence != EvidenceStatus::ObservedConfirmed
+                    || observation.delivery != DeliveryRole::OrdinaryCurrent
+                {
                     return;
                 }
                 match observation.phase {

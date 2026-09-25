@@ -35,8 +35,9 @@ The focused reducer tests under `src/state/tests.rs` prove deterministic source/
 down/up admission identity, keyboard and pointer correlation, source/device
 separation, aggregate held state, repeat/reconciliation behavior, contact
 identity, explicit absent scroll axes, omitted-vs-zero measurement semantics,
-atomic invalid-group rejection, predicted/estimated tablet behavior, stale
-contact clearing, and invalid tablet measurement atomicity.
+atomic invalid-group rejection, predicted/estimated tablet behavior,
+historical/coalesced tablet non-mutation of current confirmed state, stale contact
+clearing, and invalid tablet measurement atomicity.
 
 Additional focused continuity laws prove source-scoped invalidation, device-scoped
 sibling preservation, source-pointer invalidation rules, repeated-loss state
