@@ -17,7 +17,7 @@ fn main() -> Result<(), InputError> {
     });
 
     let mut state = InputState::default();
-    state.admit(InputObservationGroup::single(context, observation))?;
+    state.admit(&InputObservationGroup::single(context, observation))?;
 
     assert!(state.key_down_in(context, &key));
     assert!(state.key_down_anywhere(&key));

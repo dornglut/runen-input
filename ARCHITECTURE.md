@@ -27,8 +27,8 @@ buttons and motion, scroll, contacts, demonstrated tablet/stylus measurements,
 source time, evidence/history/origin, grouped admission, validation, and
 confirmed-state reduction.
 
-The public mutation boundary is one `InputState::admit(InputObservationGroup)`
-path. Keyboard, pointer-button, scroll, and contact observations each carry one
+The public mutation boundary is one `InputState::admit(&InputObservationGroup)`
+path. Admission borrows the group so consumers may retain the exact admitted evidence. Keyboard, pointer-button, scroll, and contact observations each carry one
 canonical public semantic payload. Contact identity is represented by
 `ContactId`, not a parallel raw scalar id. Reducer-internal `ControlId` and
 digital-transition representations remain private.

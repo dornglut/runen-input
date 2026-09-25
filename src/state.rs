@@ -145,7 +145,7 @@ impl InputState {
     /// Atomically validates and admits one backend-neutral observation group.
     ///
     /// Validation failure leaves confirmed state unchanged.
-    pub fn admit(&mut self, group: InputObservationGroup) -> Result<(), InputError> {
+    pub fn admit(&mut self, group: &InputObservationGroup) -> Result<(), InputError> {
         validate_group(&group)?;
 
         let source_sequence = self
@@ -155,7 +155,7 @@ impl InputState {
         *source_sequence = source_sequence.next();
         self.admission_sequence = self.admission_sequence.next();
 
-        for observation in group.observations {
+        for observation in &group.observations {
             self.apply(group.context, observation);
         }
 
@@ -263,7 +263,7 @@ impl InputState {
         }
     }
 
-    fn apply(&mut self, context: InputContext, observation: InputObservation) {
+    fn apply(&mut self, context: InputContext, observation: &InputObservation) {
         match observation {
             InputObservation::Keyboard(input) => {
                 let control = self.controls.intern_key(&input.physical_key);
@@ -294,7 +294,7 @@ impl InputState {
             InputObservation::AbsolutePointerPosition { position } => {
                 self.state
                     .absolute_pointer_positions
-                    .insert(context.source, position);
+                    .insert(context.source, *position);
             }
             InputObservation::RelativeMotion { .. } | InputObservation::Scroll(_) => {}
             InputObservation::Contact(input) => match input.phase {
@@ -342,7 +342,7 @@ impl InputState {
                 }
             }
             InputObservation::ContinuityLoss(loss) => {
-                self.apply_continuity_loss(context, loss);
+                self.apply_continuity_loss(context, *loss);
             }
         }
     }
@@ -364,7 +364,7 @@ impl InputState {
                 DigitalTransition::Cancel
             }
         };
-        self.admit(InputObservationGroup::single(
+        self.admit(&InputObservationGroup::single(
             context,
             InputObservation::Keyboard(input.clone()),
         ))?;
@@ -386,7 +386,7 @@ impl InputState {
             DigitalState::Pressed => DigitalTransition::Down,
             DigitalState::Released => DigitalTransition::Up,
         };
-        self.admit(InputObservationGroup::single(
+        self.admit(&InputObservationGroup::single(
             context,
             InputObservation::PointerButton(input),
         ))?;

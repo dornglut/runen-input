@@ -36,7 +36,7 @@ mod tests {
 
         for context in [context_a, context_b] {
             state
-                .admit(InputObservationGroup::single(
+                .admit(&InputObservationGroup::single(
                     context,
                     keyboard(
                         key.clone(),
@@ -51,7 +51,7 @@ mod tests {
         assert!(state.key_down_anywhere(&key));
 
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context_a,
                 keyboard(
                     key.clone(),
@@ -64,7 +64,7 @@ mod tests {
         assert!(state.key_down_anywhere(&key));
 
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context_b,
                 keyboard(
                     key.clone(),
@@ -76,7 +76,7 @@ mod tests {
         assert!(!state.key_down_anywhere(&key));
 
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context_b,
                 InputObservation::PointerButton(PointerButtonInput {
                     button: PointerButton::Right,
@@ -88,7 +88,7 @@ mod tests {
 
         let position = Point2::new(4.0, 8.0, CoordinateSpace::WindowPhysicalPixels);
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context_a,
                 InputObservation::Contact(ContactInput {
                     contact: ContactId::new(3),
@@ -105,7 +105,7 @@ mod tests {
         );
 
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context_a,
                 InputObservation::Scroll(ScrollInput {
                     delta: ScrollDelta::vertical_only(1.0),
@@ -149,7 +149,7 @@ mod tests {
         );
         let mut state = InputState::default();
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context,
                 InputObservation::Tablet(observation.clone()),
             ))
@@ -158,7 +158,7 @@ mod tests {
         let mut unsupported = observation;
         unsupported.capabilities.pressure = CapabilityKnowledge::Unsupported;
         assert_eq!(
-            InputState::default().admit(InputObservationGroup::single(
+            InputState::default().admit(&InputObservationGroup::single(
                 context,
                 InputObservation::Tablet(unsupported),
             )),
@@ -176,7 +176,7 @@ mod tests {
         let mut state = InputState::default();
 
         state
-            .admit(InputObservationGroup::new(
+            .admit(&InputObservationGroup::new(
                 context,
                 vec![
                     keyboard(
@@ -197,7 +197,7 @@ mod tests {
             .expect("confirmed source state should admit");
 
         state
-            .admit(InputObservationGroup::single(
+            .admit(&InputObservationGroup::single(
                 context,
                 InputObservation::ContinuityLoss(ContinuityLoss::Source),
             ))

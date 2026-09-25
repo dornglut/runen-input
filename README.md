@@ -35,7 +35,8 @@ contracts.
 ## Public contract
 
 `InputObservationGroup` is the canonical admission unit and
-`InputState::admit` is the single public mutation path.
+`InputState::admit` is the single public mutation path. Admission borrows the group,
+so consumers can retain the exact evidence after reduction.
 
 Each semantic payload has one canonical public observation representation:
 
