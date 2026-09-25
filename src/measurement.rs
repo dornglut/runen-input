@@ -9,7 +9,6 @@ pub enum RelativeMotionUnit {
     BackendDeviceUnits,
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MeasurementDomain {
     UnspecifiedScalar,
@@ -82,7 +81,6 @@ impl Vector2 {
         Self { x, y }
     }
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AnalogMeasurement {

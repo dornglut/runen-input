@@ -667,4 +667,3 @@ fn invalid_tablet_measurement_rejects_group_without_partial_state() {
     assert_eq!(authority.active_contact_count(SOURCE_A), 0);
     assert_eq!(authority.admission_sequence().get(), 0);
 }
-}

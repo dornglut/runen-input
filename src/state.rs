@@ -25,7 +25,6 @@ impl ControlId {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub(crate) struct SourceSequence(u64);
 
@@ -62,7 +61,6 @@ impl AdmissionSequence {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DigitalTransition {
     Down,
@@ -70,7 +68,6 @@ enum DigitalTransition {
     Up,
     Cancel,
 }
-
 
 #[derive(Debug, Default)]
 struct ControlInterner {
@@ -115,12 +112,10 @@ impl ControlInterner {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct ContactState {
     position: Point2,
 }
-
 
 #[derive(Debug, Default)]
 struct ConfirmedState {
@@ -129,7 +124,6 @@ struct ConfirmedState {
     absolute_pointer_positions: HashMap<InputSourceId, Point2>,
 }
 
-
 #[cfg(test)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct DigitalAdmission {
@@ -137,7 +131,6 @@ struct DigitalAdmission {
     was_down_anywhere: bool,
     is_down_anywhere: bool,
 }
-
 
 #[derive(Debug, Default)]
 pub struct InputState {

@@ -16,7 +16,6 @@ pub struct PointerButtonInput {
     pub state: DigitalState,
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScrollDomain {
     Unspecified,
@@ -31,7 +30,6 @@ pub enum ScrollPhase {
     End,
     Cancel,
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ScrollDelta {

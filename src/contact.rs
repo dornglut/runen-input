@@ -8,7 +8,6 @@ pub enum ContactPhase {
     Cancel,
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct ContactInput {
     pub id: u64,

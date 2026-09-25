@@ -55,7 +55,6 @@ fn crate_root_exports_the_complete_accepted_public_surface() {
     assert_public_type::<Vector2>();
 }
 
-
 fn keyboard(
     key: PhysicalKeyIdentity,
     state: DigitalState,
