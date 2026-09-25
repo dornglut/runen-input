@@ -61,6 +61,27 @@ Reducer-internal control ids and digital transition forms are not public API.
 absolute pointer position, and contacts. Predicted or estimated tablet evidence
 does not mutate confirmed contact state.
 
+## Basic usage
+
+The normal consumer path is intentionally small:
+
+```text
+create InputContext
+-> construct backend-neutral observations
+-> admit an InputObservationGroup
+-> query confirmed InputState
+```
+
+Run the canonical executable example with:
+
+```text
+cargo run --example basic_state
+```
+
+See [`examples/basic_state.rs`](examples/basic_state.rs). The example demonstrates
+the public workflow only; platform acquisition and product/UI policy remain outside
+RunenInput.
+
 ## Package
 
 ```text

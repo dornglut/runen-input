@@ -3,6 +3,14 @@
 //! The public contract exposes semantic device observations and one deterministic
 //! confirmed-state reducer. Platform acquisition, product actions, UI interaction,
 //! text/IME, ECS hosting, and product policy remain outside this crate.
+//!
+//! # Getting started
+//!
+//! The normal public workflow is: create an `InputContext`, construct backend-neutral
+//! observations, admit an `InputObservationGroup` through `InputState::admit`, then
+//! query confirmed state. The repository's `examples/basic_state.rs` is the canonical
+//! executable walkthrough.
+//!
 
 mod contact;
 mod continuity;

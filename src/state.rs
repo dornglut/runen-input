@@ -142,6 +142,9 @@ pub struct InputState {
 }
 
 impl InputState {
+    /// Atomically validates and admits one backend-neutral observation group.
+    ///
+    /// Validation failure leaves confirmed state unchanged.
     pub fn admit(&mut self, group: InputObservationGroup) -> Result<(), InputError> {
         validate_group(&group)?;
 
@@ -159,34 +162,40 @@ impl InputState {
         Ok(())
     }
 
+    /// Returns whether the physical key is confirmed held in this exact source/device context.
     pub fn key_down_in(&self, context: InputContext, key: &PhysicalKeyIdentity) -> bool {
         self.controls
             .key(key)
             .is_some_and(|control| self.control_down_in(context, control))
     }
 
+    /// Returns whether the physical key is confirmed held in any admitted context.
     pub fn key_down_anywhere(&self, key: &PhysicalKeyIdentity) -> bool {
         self.controls
             .key(key)
             .is_some_and(|control| self.control_down_anywhere(control))
     }
 
+    /// Returns whether the pointer button is confirmed held in this exact source/device context.
     pub fn pointer_button_down_in(&self, context: InputContext, button: PointerButton) -> bool {
         self.controls
             .button(button)
             .is_some_and(|control| self.control_down_in(context, control))
     }
 
+    /// Returns whether the pointer button is confirmed held in any admitted context.
     pub fn pointer_button_down_anywhere(&self, button: PointerButton) -> bool {
         self.controls
             .button(button)
             .is_some_and(|control| self.control_down_anywhere(control))
     }
 
+    /// Returns the latest confirmed absolute pointer position for the source, if known.
     pub fn absolute_pointer_position(&self, source: InputSourceId) -> Option<Point2> {
         self.state.absolute_pointer_positions.get(&source).copied()
     }
 
+    /// Returns the confirmed position of an active contact in this exact context.
     pub fn contact_position_in(&self, context: InputContext, contact: ContactId) -> Option<Point2> {
         self.state
             .contacts
