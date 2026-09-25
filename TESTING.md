@@ -25,7 +25,7 @@ The validator covers:
 - root and downstream rustfmt;
 - locked workspace and downstream tests;
 - strict root and downstream Clippy;
-- rustdoc with warnings denied;
+- rustdoc with warnings denied and crate-level missing-public-docs enforcement;
 - Rust 1.93.0 checks for root and downstream packages;
 - Git whitespace checks;
 - unchanged repository state.
@@ -54,7 +54,8 @@ the public `runen-input` package through `path = "../.."`.
 It proves multi-context key state, aggregate release behavior, reconciliation,
 pointer-button state, direct canonical scroll/contact/tablet payload admission,
 tri-state tablet capability knowledge, explicit unsupported-evidence rejection,
-source-time context/unit validation, relative-motion/absolute-position separation,
+standard `InputError` diagnostics/error traits, source-time context/unit validation,
+relative-motion/absolute-position separation,
 historical/predicted/estimated tablet non-mutation, scoped continuity loss, and contact state
 without Runenwerk, winit, RunenECS, RunenUI, or private-module access.
 
