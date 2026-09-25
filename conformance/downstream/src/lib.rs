@@ -1,11 +1,14 @@
 #[cfg(test)]
 mod tests {
     use runen_input::{
-        ContactId, ContactInput, ContactPhase, ContinuityLoss, CoordinateSpace, DigitalState,
-        InputContext, InputDeviceId, InputObservation, InputObservationGroup, InputSourceId,
-        InputState, KeyLocation, KeyboardInput, LogicalKey, NativeLogicalKey, ObservationOrigin,
-        PhysicalKeyIdentity, Point2, PointerButton, PointerButtonInput, ScrollDelta, ScrollDomain,
-        ScrollInput,
+        AnalogMeasurement, CapabilityKnowledge, ContactId, ContactInput, ContactPhase,
+        ContactPresence, ContinuityLoss, CoordinateSpace, DeliveryRole, DigitalState,
+        EvidenceStatus, InputContext, InputDeviceId, InputError, InputObservation,
+        InputObservationGroup, InputSourceId, InputState, InputToolKind, KeyLocation,
+        KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
+        PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton, PointerButtonInput,
+        ScrollDelta, ScrollDomain, ScrollInput, TabletCapabilities, TabletObservation, ToolId,
+        Vector2,
     };
 
     fn keyboard(
@@ -111,6 +114,56 @@ mod tests {
                 }),
             ))
             .expect("scroll payload should admit without reconstruction");
+    }
+
+    #[test]
+    fn independent_consumer_observes_truthful_tablet_capability_knowledge() {
+        let context = InputContext::new(InputSourceId::new(22), Some(InputDeviceId::new(5)));
+        let position = Point2::new(6.0, 9.0, CoordinateSpace::WindowPhysicalPixels);
+        let observation = TabletObservation {
+            contact: ContactId::new(8),
+            tool: Some(ToolId::new(2)),
+            tool_kind: InputToolKind::Pen,
+            phase: ContactPhase::Begin,
+            presence: ContactPresence::Contact,
+            position,
+            delta: Vector2::new(0.0, 0.0),
+            pressure: Some(AnalogMeasurement::new(
+                0.25,
+                MeasurementDomain::NormalizedUnitInterval,
+            )),
+            tangential_pressure: None,
+            tilt: None,
+            twist: None,
+            controls: PhysicalTabletControls::default(),
+            capabilities: TabletCapabilities::default(),
+            source_time: None,
+            evidence: EvidenceStatus::ObservedConfirmed,
+            delivery: DeliveryRole::OrdinaryCurrent,
+            origin: ObservationOrigin::SourceReport,
+        };
+
+        assert_eq!(
+            observation.capabilities.pressure,
+            CapabilityKnowledge::Unknown
+        );
+        let mut state = InputState::default();
+        state
+            .admit(InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(observation.clone()),
+            ))
+            .expect("sample evidence remains usable while capability metadata is unknown");
+
+        let mut unsupported = observation;
+        unsupported.capabilities.pressure = CapabilityKnowledge::Unsupported;
+        assert_eq!(
+            InputState::default().admit(InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(unsupported),
+            )),
+            Err(InputError::UnsupportedTabletCapabilityEvidence)
+        );
     }
 
     #[test]

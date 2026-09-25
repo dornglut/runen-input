@@ -36,8 +36,9 @@ down/up admission identity, keyboard and pointer correlation, source/device
 separation, aggregate held state, repeat/reconciliation behavior, contact
 identity, explicit absent scroll axes, omitted-vs-zero measurement semantics,
 atomic invalid-group rejection, predicted/estimated tablet behavior,
-historical/coalesced tablet non-mutation of current confirmed state, stale contact
-clearing, and invalid tablet measurement atomicity.
+historical/coalesced tablet non-mutation of current confirmed state, tri-state tablet
+capability knowledge and unsupported-evidence rejection, stale contact clearing, and
+invalid tablet measurement atomicity.
 
 Additional focused continuity laws prove source-scoped invalidation, device-scoped
 sibling preservation, source-pointer invalidation rules, repeated-loss state
@@ -50,9 +51,10 @@ without a device-bearing context.
 the public `runen-input` package through `path = "../.."`.
 
 It proves multi-context key state, aggregate release behavior, reconciliation,
-pointer-button state, direct canonical scroll/contact payload admission, scoped
-continuity loss, and contact state without Runenwerk, winit, RunenECS, RunenUI,
-or private-module access.
+pointer-button state, direct canonical scroll/contact/tablet payload admission,
+tri-state tablet capability knowledge and explicit unsupported-evidence rejection,
+scoped continuity loss, and contact state without Runenwerk, winit, RunenECS,
+RunenUI, or private-module access.
 
 ## CI
 

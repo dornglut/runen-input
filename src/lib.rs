@@ -43,6 +43,6 @@ pub use pointer::{
 };
 pub use state::InputState;
 pub use tablet::{
-    ContactPresence, InputToolKind, PhysicalTabletControls, StylusTilt, TabletCapabilities,
-    TabletObservation,
+    CapabilityKnowledge, ContactPresence, InputToolKind, PhysicalTabletControls, StylusTilt,
+    TabletCapabilities, TabletObservation,
 };
