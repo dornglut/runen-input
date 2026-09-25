@@ -14,6 +14,7 @@ The validator covers:
 
 - required authority and provenance files;
 - package/repository/license identity;
+- a recursive, fail-closed scan of the complete Rust product source closure;
 - standalone source/dependency boundaries;
 - the public observation/state contract;
 - all 15 transferred focused semantic/reducer laws;
@@ -29,7 +30,7 @@ The validator covers:
 
 ## Transferred semantic laws
 
-The focused source tests prove deterministic source/admission ordering,
+The focused reducer tests under `src/state/tests.rs` prove deterministic source/admission ordering,
 down/up admission identity, keyboard and pointer correlation, source/device
 separation, aggregate held state, repeat/reconciliation behavior, contact
 identity, explicit absent scroll axes, omitted-vs-zero measurement semantics,

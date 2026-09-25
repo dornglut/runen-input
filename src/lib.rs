@@ -4,6 +4,37 @@
 //! confirmed-state reducer. Platform acquisition, product actions, UI interaction,
 //! text/IME, ECS hosting, and product policy remain outside this crate.
 
-mod input;
+mod contact;
+mod digital;
+mod evidence;
+mod identity;
+mod keyboard;
+mod measurement;
+mod observation;
+mod pointer;
+mod state;
+mod tablet;
+mod validation;
 
-pub use input::*;
+pub use contact::{ContactInput, ContactPhase};
+pub use digital::DigitalState;
+pub use evidence::{
+    DeliveryRole, EvidenceStatus, ObservationOrigin, SourceTime, SourceTimeUnit,
+};
+pub use identity::{ContactId, InputContext, InputDeviceId, InputSourceId, ToolId};
+pub use keyboard::{
+    KeyLocation, KeyboardInput, LogicalKey, NativeLogicalKey, NativePhysicalKeyCode,
+    PhysicalKeyIdentity,
+};
+pub use measurement::{
+    AnalogMeasurement, CoordinateSpace, MeasurementDomain, Point2, RelativeMotionUnit, Vector2,
+};
+pub use observation::{InputError, InputObservation, InputObservationGroup};
+pub use pointer::{
+    PointerButton, PointerButtonInput, ScrollDelta, ScrollDomain, ScrollInput, ScrollPhase,
+};
+pub use state::InputState;
+pub use tablet::{
+    ContactPresence, InputToolKind, PhysicalTabletControls, StylusTilt, TabletCapabilities,
+    TabletObservation,
+};

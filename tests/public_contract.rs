@@ -1,9 +1,60 @@
 use runen_input::{
-    ContactId, ContactPhase, CoordinateSpace, DigitalState, InputContext, InputDeviceId,
-    InputObservation, InputObservationGroup, InputSourceId, InputState, KeyLocation, KeyboardInput,
-    LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin, PhysicalKeyIdentity,
-    Point2, PointerButton, PointerButtonInput, ScrollDelta,
+    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, CoordinateSpace,
+    DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId, InputError,
+    InputObservation, InputObservationGroup, InputSourceId, InputState, InputToolKind, KeyLocation,
+    KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, NativePhysicalKeyCode,
+    ObservationOrigin, PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton,
+    PointerButtonInput, RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, ScrollPhase,
+    SourceTime, SourceTimeUnit, StylusTilt, TabletCapabilities, TabletObservation, ToolId, Vector2,
 };
+
+fn assert_public_type<T>() {}
+
+#[test]
+fn crate_root_exports_the_complete_accepted_public_surface() {
+    assert_public_type::<AnalogMeasurement>();
+    assert_public_type::<ContactId>();
+    assert_public_type::<ContactInput>();
+    assert_public_type::<ContactPhase>();
+    assert_public_type::<ContactPresence>();
+    assert_public_type::<CoordinateSpace>();
+    assert_public_type::<DeliveryRole>();
+    assert_public_type::<DigitalState>();
+    assert_public_type::<EvidenceStatus>();
+    assert_public_type::<InputContext>();
+    assert_public_type::<InputDeviceId>();
+    assert_public_type::<InputError>();
+    assert_public_type::<InputObservation>();
+    assert_public_type::<InputObservationGroup>();
+    assert_public_type::<InputSourceId>();
+    assert_public_type::<InputState>();
+    assert_public_type::<InputToolKind>();
+    assert_public_type::<KeyLocation>();
+    assert_public_type::<KeyboardInput>();
+    assert_public_type::<LogicalKey>();
+    assert_public_type::<MeasurementDomain>();
+    assert_public_type::<NativeLogicalKey>();
+    assert_public_type::<NativePhysicalKeyCode>();
+    assert_public_type::<ObservationOrigin>();
+    assert_public_type::<PhysicalKeyIdentity>();
+    assert_public_type::<PhysicalTabletControls>();
+    assert_public_type::<Point2>();
+    assert_public_type::<PointerButton>();
+    assert_public_type::<PointerButtonInput>();
+    assert_public_type::<RelativeMotionUnit>();
+    assert_public_type::<ScrollDelta>();
+    assert_public_type::<ScrollDomain>();
+    assert_public_type::<ScrollInput>();
+    assert_public_type::<ScrollPhase>();
+    assert_public_type::<SourceTime>();
+    assert_public_type::<SourceTimeUnit>();
+    assert_public_type::<StylusTilt>();
+    assert_public_type::<TabletCapabilities>();
+    assert_public_type::<TabletObservation>();
+    assert_public_type::<ToolId>();
+    assert_public_type::<Vector2>();
+}
+
 
 fn keyboard(
     key: PhysicalKeyIdentity,
