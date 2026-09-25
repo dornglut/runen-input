@@ -11,6 +11,21 @@ use runen_input::{
 
 fn assert_public_type<T>() {}
 
+fn assert_error_trait<T: std::error::Error>() {}
+
+#[test]
+fn public_input_error_implements_standard_error_and_reports_precise_messages() {
+    assert_error_trait::<InputError>();
+    assert_eq!(
+        InputError::SourceTimeContextMismatch.to_string(),
+        "tablet source-time context does not match the observation-group context"
+    );
+    assert_eq!(
+        InputError::DeviceContinuityLossRequiresDevice.to_string(),
+        "device continuity loss requires a device-bearing input context"
+    );
+}
+
 #[test]
 fn crate_root_exports_the_complete_accepted_public_surface() {
     assert_public_type::<AnalogMeasurement>();

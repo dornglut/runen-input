@@ -133,6 +133,7 @@ struct DigitalAdmission {
     is_down_anywhere: bool,
 }
 
+/// Deterministic reducer for current confirmed backend-neutral input state.
 #[derive(Debug, Default)]
 pub struct InputState {
     state: ConfirmedState,
