@@ -210,9 +210,10 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
 fn validate_std_only_product_manifest(cargo: &str) -> Result<(), String> {
     for line in cargo.lines() {
         let section = line.split('#').next().unwrap_or_default().trim();
-        let direct_dependency_section = matches!(section, "[dependencies]" | "[build-dependencies]")
-            || section.starts_with("[dependencies.")
-            || section.starts_with("[build-dependencies.");
+        let direct_dependency_section =
+            matches!(section, "[dependencies]" | "[build-dependencies]")
+                || section.starts_with("[dependencies.")
+                || section.starts_with("[build-dependencies.");
         let target_dependency_section = section.starts_with("[target.")
             && (section.contains(".dependencies]")
                 || section.contains(".dependencies.")
