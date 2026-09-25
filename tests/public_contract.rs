@@ -275,3 +275,71 @@ fn public_tablet_capability_knowledge_preserves_unknown_and_rejects_explicit_con
         Err(InputError::UnsupportedTabletCapabilityEvidence)
     );
 }
+#[test]
+fn public_source_time_validation_distinguishes_context_from_invalid_native_unit() {
+    let context = InputContext::new(InputSourceId::new(41), Some(InputDeviceId::new(11)));
+    let other_context = InputContext::new(InputSourceId::new(42), Some(InputDeviceId::new(12)));
+    let position = Point2::new(2.0, 3.0, CoordinateSpace::WindowPhysicalPixels);
+    let base = TabletObservation {
+        contact: ContactId::new(17),
+        tool: Some(ToolId::new(5)),
+        tool_kind: InputToolKind::Pen,
+        phase: ContactPhase::Begin,
+        presence: ContactPresence::Contact,
+        position,
+        delta: Vector2::new(0.0, 0.0),
+        pressure: None,
+        tangential_pressure: None,
+        tilt: None,
+        twist: None,
+        controls: PhysicalTabletControls::default(),
+        capabilities: TabletCapabilities::default(),
+        source_time: Some(SourceTime::new(
+            context,
+            250,
+            SourceTimeUnit::NativeTicks {
+                ticks_per_second: 1_000,
+            },
+        )),
+        evidence: EvidenceStatus::ObservedConfirmed,
+        delivery: DeliveryRole::OrdinaryCurrent,
+        origin: ObservationOrigin::SourceReport,
+    };
+
+    InputState::default()
+        .admit(&InputObservationGroup::single(
+            context,
+            InputObservation::Tablet(base.clone()),
+        ))
+        .expect("positive native tick frequency should be valid");
+
+    let mut wrong_context = base.clone();
+    wrong_context.source_time = Some(SourceTime::new(
+        other_context,
+        250,
+        SourceTimeUnit::Microseconds,
+    ));
+    assert_eq!(
+        InputState::default().admit(&InputObservationGroup::single(
+            context,
+            InputObservation::Tablet(wrong_context),
+        )),
+        Err(InputError::SourceTimeContextMismatch)
+    );
+
+    let mut invalid_unit = base;
+    invalid_unit.source_time = Some(SourceTime::new(
+        context,
+        250,
+        SourceTimeUnit::NativeTicks {
+            ticks_per_second: 0,
+        },
+    ));
+    assert_eq!(
+        InputState::default().admit(&InputObservationGroup::single(
+            context,
+            InputObservation::Tablet(invalid_unit),
+        )),
+        Err(InputError::InvalidSourceTimeUnit)
+    );
+}

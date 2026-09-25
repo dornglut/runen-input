@@ -704,6 +704,71 @@ fn historical_tablet_observation(phase: ContactPhase, position: Point2) -> Table
 }
 
 #[test]
+fn source_time_context_mismatch_rejects_group_atomically() {
+    let mut authority = InputState::default();
+    let key = PhysicalKeyIdentity::code("KeySourceTimeContext");
+    let observation = tablet_observation(
+        ContactPhase::Begin,
+        EvidenceStatus::ObservedConfirmed,
+        Point2::new(5.0, 8.0, CoordinateSpace::WindowPhysicalPixels),
+        None,
+    );
+
+    let result = authority.admit(&InputObservationGroup::new(
+        CONTEXT_B,
+        vec![
+            InputObservation::Keyboard(keyboard_input(
+                key.clone(),
+                DigitalState::Pressed,
+                false,
+                ObservationOrigin::SourceReport,
+            )),
+            InputObservation::Tablet(observation),
+        ],
+    ));
+
+    assert_eq!(result, Err(InputError::SourceTimeContextMismatch));
+    assert!(!authority.key_down_in(CONTEXT_B, &key));
+    assert_eq!(authority.admission_sequence().get(), 0);
+}
+
+#[test]
+fn invalid_native_source_time_unit_rejects_group_atomically() {
+    let mut authority = InputState::default();
+    let key = PhysicalKeyIdentity::code("KeyInvalidSourceTimeUnit");
+    let mut observation = tablet_observation(
+        ContactPhase::Begin,
+        EvidenceStatus::ObservedConfirmed,
+        Point2::new(5.0, 8.0, CoordinateSpace::WindowPhysicalPixels),
+        None,
+    );
+    observation.source_time = Some(SourceTime::new(
+        CONTEXT_A,
+        100,
+        SourceTimeUnit::NativeTicks {
+            ticks_per_second: 0,
+        },
+    ));
+
+    let result = authority.admit(&InputObservationGroup::new(
+        CONTEXT_A,
+        vec![
+            InputObservation::Keyboard(keyboard_input(
+                key.clone(),
+                DigitalState::Pressed,
+                false,
+                ObservationOrigin::SourceReport,
+            )),
+            InputObservation::Tablet(observation),
+        ],
+    ));
+
+    assert_eq!(result, Err(InputError::InvalidSourceTimeUnit));
+    assert!(!authority.key_down_in(CONTEXT_A, &key));
+    assert_eq!(authority.admission_sequence().get(), 0);
+}
+
+#[test]
 fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
     let mut authority = InputState::default();
     let contact = ContactId::new(44);

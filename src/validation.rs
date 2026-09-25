@@ -37,17 +37,19 @@ pub(crate) fn validate_group(group: &InputObservationGroup) -> Result<(), InputE
             return Err(InputError::DeviceContinuityLossRequiresDevice);
         }
         if let InputObservation::Tablet(tablet) = observation
-            && tablet.source_time.is_some_and(|time| {
-                time.context != group.context
-                    || matches!(
-                        time.unit,
-                        SourceTimeUnit::NativeTicks {
-                            ticks_per_second: 0
-                        }
-                    )
-            })
+            && let Some(source_time) = tablet.source_time
         {
-            return Err(InputError::SourceTimeContextMismatch);
+            if source_time.context != group.context {
+                return Err(InputError::SourceTimeContextMismatch);
+            }
+            if matches!(
+                source_time.unit,
+                SourceTimeUnit::NativeTicks {
+                    ticks_per_second: 0
+                }
+            ) {
+                return Err(InputError::InvalidSourceTimeUnit);
+            }
         }
     }
 
