@@ -1,4 +1,7 @@
-use crate::measurement::{AnalogMeasurement, Point2};
+use crate::{
+    identity::ContactId,
+    measurement::{AnalogMeasurement, Point2},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ContactPhase {
@@ -10,7 +13,7 @@ pub enum ContactPhase {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ContactInput {
-    pub id: u64,
+    pub contact: ContactId,
     pub phase: ContactPhase,
     pub position: Point2,
     pub pressure: Option<AnalogMeasurement>,

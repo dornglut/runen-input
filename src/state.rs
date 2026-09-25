@@ -259,23 +259,20 @@ impl InputState {
                     .absolute_pointer_positions
                     .insert(context.source, position);
             }
-            InputObservation::RelativeMotion { .. } | InputObservation::Scroll { .. } => {}
-            InputObservation::Contact {
-                contact,
-                phase,
-                position,
-                ..
-            } => match phase {
+            InputObservation::RelativeMotion { .. } | InputObservation::Scroll(_) => {}
+            InputObservation::Contact(input) => match input.phase {
                 ContactPhase::Begin | ContactPhase::Update => {
                     self.state.contacts.insert(
-                        (context.source, context.device, contact),
-                        ContactState { position },
+                        (context.source, context.device, input.contact),
+                        ContactState {
+                            position: input.position,
+                        },
                     );
                 }
                 ContactPhase::End | ContactPhase::Cancel => {
                     self.state
                         .contacts
-                        .remove(&(context.source, context.device, contact));
+                        .remove(&(context.source, context.device, input.contact));
                 }
             },
             InputObservation::Tablet(observation) => {

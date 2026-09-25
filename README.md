@@ -36,12 +36,17 @@ contracts.
 `InputObservationGroup` is the canonical admission unit and
 `InputState::admit` is the single public mutation path.
 
-Keyboard and pointer-button evidence are semantic observations:
+Each semantic payload has one canonical public observation representation:
 
 ```text
 InputObservation::Keyboard(KeyboardInput)
 InputObservation::PointerButton(PointerButtonInput)
+InputObservation::Scroll(ScrollInput)
+InputObservation::Contact(ContactInput)
 ```
+
+`ContactInput` carries the semantic `ContactId`; there is no parallel raw-id
+contact payload.
 
 Reducer-internal control ids and digital transition forms are not public API.
 

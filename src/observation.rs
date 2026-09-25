@@ -1,9 +1,9 @@
 use crate::{
-    contact::ContactPhase,
-    identity::{ContactId, InputContext},
+    contact::ContactInput,
+    identity::InputContext,
     keyboard::KeyboardInput,
-    measurement::{AnalogMeasurement, Point2, RelativeMotionUnit, Vector2},
-    pointer::{PointerButtonInput, ScrollDelta, ScrollDomain, ScrollPhase},
+    measurement::{Point2, RelativeMotionUnit, Vector2},
+    pointer::{PointerButtonInput, ScrollInput},
     tablet::TabletObservation,
 };
 
@@ -18,18 +18,8 @@ pub enum InputObservation {
         delta: Vector2,
         unit: RelativeMotionUnit,
     },
-    Scroll {
-        delta: ScrollDelta,
-        domain: ScrollDomain,
-        phase: Option<ScrollPhase>,
-    },
-    Contact {
-        contact: ContactId,
-        phase: ContactPhase,
-        position: Point2,
-        pressure: Option<AnalogMeasurement>,
-        altitude_angle_radians: Option<f32>,
-    },
+    Scroll(ScrollInput),
+    Contact(ContactInput),
     Tablet(TabletObservation),
 }
 

@@ -110,13 +110,13 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
             context_a,
             vec![
                 InputObservation::AbsolutePointerPosition { position },
-                InputObservation::Contact {
+                InputObservation::Contact(ContactInput {
                     contact: ContactId::new(4),
                     phase: ContactPhase::Begin,
                     position,
                     pressure: None,
                     altitude_angle_radians: None,
-                },
+                }),
             ],
         ))
         .expect("pointer/contact group should admit");
@@ -126,7 +126,19 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
         Some(position)
     );
 
-    assert_eq!(ScrollDelta::vertical_only(2.0).horizontal, None);
+    let scroll = ScrollInput {
+        delta: ScrollDelta::vertical_only(2.0),
+        domain: ScrollDomain::Lines,
+        phase: Some(ScrollPhase::Update),
+    };
+    assert_eq!(scroll.delta.horizontal, None);
+    state
+        .admit(InputObservationGroup::single(
+            context_a,
+            InputObservation::Scroll(scroll),
+        ))
+        .expect("semantic scroll payload should admit directly");
+
     assert_eq!(
         MeasurementDomain::calibrated_force(5.0).max_possible_force(),
         Some(5.0)
