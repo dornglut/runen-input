@@ -6,7 +6,7 @@ use crate::{
     InputToolKind, KeyLocation, KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey,
     ObservationOrigin, PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton,
     PointerButtonInput, RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime,
-    SourceTimeUnit, TabletCapabilities, TabletObservation, ToolId, Vector2,
+    SourceTimeUnit, StylusTilt, TabletCapabilities, TabletObservation, ToolId, Vector2,
 };
 
 const SOURCE_A: InputSourceId = InputSourceId::new(1);
