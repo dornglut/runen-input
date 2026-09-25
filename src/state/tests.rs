@@ -1,8 +1,8 @@
 use super::{DigitalTransition, InputState};
 use crate::{
     AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, CoordinateSpace,
-    DeliveryRole,
-    DigitalState, EvidenceStatus, InputContext, InputDeviceId, InputError, InputObservation,
+    DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId, InputError,
+    InputObservation,
     InputObservationGroup, InputSourceId, InputToolKind, KeyLocation, KeyboardInput, LogicalKey,
     MeasurementDomain, NativeLogicalKey, ObservationOrigin, PhysicalKeyIdentity,
     PhysicalTabletControls, Point2, PointerButton, PointerButtonInput, RelativeMotionUnit,

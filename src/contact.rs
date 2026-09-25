@@ -1,4 +1,7 @@
-use crate::{identity::ContactId, measurement::{AnalogMeasurement, Point2}};
+use crate::{
+    identity::ContactId,
+    measurement::{AnalogMeasurement, Point2},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ContactPhase {
