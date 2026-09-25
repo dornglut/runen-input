@@ -1,9 +1,8 @@
 use runen_input::{
     AnalogMeasurement, CapabilityKnowledge, ContactId, ContactInput, ContactPhase, ContactPresence,
     ContinuityLoss, CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext,
-    InputDeviceId,
-    InputError, InputObservation, InputObservationGroup, InputSourceId, InputState, InputToolKind,
-    KeyLocation, KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey,
+    InputDeviceId, InputError, InputObservation, InputObservationGroup, InputSourceId, InputState,
+    InputToolKind, KeyLocation, KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey,
     NativePhysicalKeyCode, ObservationOrigin, PhysicalKeyIdentity, PhysicalTabletControls, Point2,
     PointerButton, PointerButtonInput, RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput,
     ScrollPhase, SourceTime, SourceTimeUnit, StylusTilt, TabletCapabilities, TabletObservation,

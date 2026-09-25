@@ -130,8 +130,10 @@ fn has_consistent_capability_evidence(observation: &InputObservation) -> bool {
         return true;
     };
 
-    capability_allows_evidence(observation.capabilities.pressure, observation.pressure.is_some())
-        && capability_allows_evidence(observation.capabilities.tilt, observation.tilt.is_some())
+    capability_allows_evidence(
+        observation.capabilities.pressure,
+        observation.pressure.is_some(),
+    ) && capability_allows_evidence(observation.capabilities.tilt, observation.tilt.is_some())
         && capability_allows_evidence(observation.capabilities.twist, observation.twist.is_some())
         && capability_allows_evidence(
             observation.capabilities.tangential_pressure,
