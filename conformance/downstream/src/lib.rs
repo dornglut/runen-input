@@ -7,7 +7,8 @@ mod tests {
         InputObservationGroup, InputSourceId, InputState, InputToolKind, KeyLocation,
         KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
         PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton, PointerButtonInput,
-        ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit, TabletCapabilities,
+        RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit,
+        TabletCapabilities,
         TabletObservation, ToolId, Vector2,
     };
 
@@ -276,4 +277,97 @@ mod tests {
             Err(InputError::InvalidSourceTimeUnit)
         );
     }
+
+    #[test]
+    fn independent_consumer_keeps_relative_motion_distinct_from_absolute_position() {
+        let source = InputSourceId::new(71);
+        let context = InputContext::new(source, Some(InputDeviceId::new(8)));
+        let absolute = Point2::new(20.0, 30.0, CoordinateSpace::WindowPhysicalPixels);
+        let mut state = InputState::default();
+
+        state
+            .admit(&InputObservationGroup::single(
+                context,
+                InputObservation::AbsolutePointerPosition { position: absolute },
+            ))
+            .expect("absolute position should admit");
+        state
+            .admit(&InputObservationGroup::single(
+                context,
+                InputObservation::RelativeMotion {
+                    delta: Vector2::new(4.0, -2.0),
+                    unit: RelativeMotionUnit::BackendDeviceUnits,
+                },
+            ))
+            .expect("relative motion should admit through the public contract");
+
+        assert_eq!(state.absolute_pointer_position(source), Some(absolute));
+    }
+
+    #[test]
+    fn independent_consumer_keeps_noncurrent_tablet_evidence_out_of_confirmed_state() {
+        let context = InputContext::new(InputSourceId::new(72), Some(InputDeviceId::new(9)));
+        let contact = ContactId::new(21);
+        let current = Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+        let alternate = Point2::new(90.0, 120.0, CoordinateSpace::WindowPhysicalPixels);
+        let mut observation = TabletObservation {
+            contact,
+            tool: Some(ToolId::new(7)),
+            tool_kind: InputToolKind::Pen,
+            phase: ContactPhase::Begin,
+            presence: ContactPresence::Contact,
+            position: current,
+            delta: Vector2::new(0.0, 0.0),
+            pressure: None,
+            tangential_pressure: None,
+            tilt: None,
+            twist: None,
+            controls: PhysicalTabletControls::default(),
+            capabilities: TabletCapabilities::default(),
+            source_time: None,
+            evidence: EvidenceStatus::ObservedConfirmed,
+            delivery: DeliveryRole::OrdinaryCurrent,
+            origin: ObservationOrigin::SourceReport,
+        };
+        let mut state = InputState::default();
+
+        state
+            .admit(&InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(observation.clone()),
+            ))
+            .expect("ordinary-current confirmed tablet evidence should admit");
+        assert_eq!(state.contact_position_in(context, contact), Some(current));
+
+        observation.phase = ContactPhase::Update;
+        observation.position = alternate;
+        observation.delivery = DeliveryRole::HistoricalCoalesced;
+        state
+            .admit(&InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(observation.clone()),
+            ))
+            .expect("historical confirmed evidence should remain deliverable");
+        assert_eq!(state.contact_position_in(context, contact), Some(current));
+
+        observation.delivery = DeliveryRole::OrdinaryCurrent;
+        observation.evidence = EvidenceStatus::PredictedProvisional;
+        state
+            .admit(&InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(observation.clone()),
+            ))
+            .expect("predicted evidence should remain deliverable");
+        assert_eq!(state.contact_position_in(context, contact), Some(current));
+
+        observation.evidence = EvidenceStatus::EstimatedRevisable;
+        state
+            .admit(&InputObservationGroup::single(
+                context,
+                InputObservation::Tablet(observation),
+            ))
+            .expect("estimated evidence should remain deliverable");
+        assert_eq!(state.contact_position_in(context, contact), Some(current));
+    }
+
 }
