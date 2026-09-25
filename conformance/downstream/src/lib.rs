@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tests {
     use runen_input::{
-        ContactId, ContactInput, ContactPhase, CoordinateSpace, DigitalState, InputContext,
+        ContactId, ContactInput, ContactPhase, ContinuityLoss, CoordinateSpace, DigitalState,
+        InputContext,
         InputDeviceId, InputObservation, InputObservationGroup, InputSourceId, InputState,
         KeyLocation, KeyboardInput, LogicalKey, NativeLogicalKey, ObservationOrigin,
         PhysicalKeyIdentity, Point2, PointerButton, PointerButtonInput, ScrollDelta, ScrollDomain,
@@ -111,5 +112,47 @@ mod tests {
                 }),
             ))
             .expect("scroll payload should admit without reconstruction");
+    }
+
+    #[test]
+    fn independent_consumer_can_invalidate_source_continuity() {
+        let source = InputSourceId::new(31);
+        let context = InputContext::new(source, Some(InputDeviceId::new(41)));
+        let key = PhysicalKeyIdentity::code("KeyIndependentContinuity");
+        let contact = ContactId::new(51);
+        let position = Point2::new(3.0, 5.0, CoordinateSpace::WindowPhysicalPixels);
+        let mut state = InputState::default();
+
+        state
+            .admit(InputObservationGroup::new(
+                context,
+                vec![
+                    keyboard(
+                        key.clone(),
+                        DigitalState::Pressed,
+                        ObservationOrigin::SourceReport,
+                    ),
+                    InputObservation::AbsolutePointerPosition { position },
+                    InputObservation::Contact(ContactInput {
+                        contact,
+                        phase: ContactPhase::Begin,
+                        position,
+                        pressure: None,
+                        altitude_angle_radians: None,
+                    }),
+                ],
+            ))
+            .expect("confirmed source state should admit");
+
+        state
+            .admit(InputObservationGroup::single(
+                context,
+                InputObservation::ContinuityLost(ContinuityLoss::Source),
+            ))
+            .expect("source continuity loss should admit");
+
+        assert!(!state.key_down_in(context, &key));
+        assert_eq!(state.contact_position_in(context, contact), None);
+        assert_eq!(state.absolute_pointer_position(source), None);
     }
 }

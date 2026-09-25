@@ -52,10 +52,25 @@ authorities.
 - measurement domains preserve uncertainty;
 - predicted/estimated tablet samples are deliverable evidence but do not mutate
   confirmed contact state;
+- source continuity loss invalidates held controls, contacts, and source-scoped
+  absolute pointer state for that source without fabricating ordinary releases/end events;
+- device continuity loss invalidates only held controls and contacts for the exact
+  device and preserves sibling devices plus source-scoped pointer state;
+- window focus is not input-source continuity;
 - invalid groups reject atomically.
 
 Source/admission ordering remains reducer-owned implementation semantics. It is
-not published merely because internal conformance inspects it.
+not published merely because internal conformance inspects it. Continuity loss
+does not rewind those ordering counters or reducer-internal control interning.
+
+The public continuity payload is `ContinuityLoss::{Source, Device}`, carried by
+`InputObservation::ContinuityLost`. The enclosing `InputObservationGroup`
+supplies the affected `InputContext`. Device loss without a device identity is
+invalid and rejects the group atomically.
+
+Backend adapters own the decision that a concrete backend lifecycle event proves
+continuity loss. RunenInput does not equate Host/window focus, UI pointer capture,
+or product cancellation with source/device continuity.
 
 ## Repository boundary
 

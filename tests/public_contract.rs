@@ -1,5 +1,6 @@
 use runen_input::{
-    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, CoordinateSpace,
+    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, ContinuityLoss,
+    CoordinateSpace,
     DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId, InputError,
     InputObservation, InputObservationGroup, InputSourceId, InputState, InputToolKind, KeyLocation,
     KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, NativePhysicalKeyCode,
@@ -17,6 +18,7 @@ fn crate_root_exports_the_complete_accepted_public_surface() {
     assert_public_type::<ContactInput>();
     assert_public_type::<ContactPhase>();
     assert_public_type::<ContactPresence>();
+    assert_public_type::<ContinuityLoss>();
     assert_public_type::<CoordinateSpace>();
     assert_public_type::<DeliveryRole>();
     assert_public_type::<DigitalState>();
@@ -143,4 +145,54 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
         MeasurementDomain::calibrated_force(5.0).max_possible_force(),
         Some(5.0)
     );
+}
+
+#[test]
+fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
+    let source = InputSourceId::new(21);
+    let context_a = InputContext::new(source, Some(InputDeviceId::new(1)));
+    let context_b = InputContext::new(source, Some(InputDeviceId::new(2)));
+    let key = PhysicalKeyIdentity::code("KeyContinuity");
+    let position = Point2::new(8.0, 13.0, CoordinateSpace::WindowPhysicalPixels);
+    let mut state = InputState::default();
+
+    for context in [context_a, context_b] {
+        state
+            .admit(InputObservationGroup::single(
+                context,
+                InputObservation::Keyboard(keyboard(
+                    key.clone(),
+                    DigitalState::Pressed,
+                    ObservationOrigin::SourceReport,
+                )),
+            ))
+            .expect("device key state should admit");
+    }
+    state
+        .admit(InputObservationGroup::single(
+            context_a,
+            InputObservation::AbsolutePointerPosition { position },
+        ))
+        .expect("source pointer state should admit");
+
+    state
+        .admit(InputObservationGroup::single(
+            context_a,
+            InputObservation::ContinuityLost(ContinuityLoss::Device),
+        ))
+        .expect("device continuity loss should admit");
+
+    assert!(!state.key_down_in(context_a, &key));
+    assert!(state.key_down_in(context_b, &key));
+    assert_eq!(state.absolute_pointer_position(source), Some(position));
+
+    state
+        .admit(InputObservationGroup::single(
+            context_b,
+            InputObservation::ContinuityLost(ContinuityLoss::Source),
+        ))
+        .expect("source continuity loss should admit");
+
+    assert!(!state.key_down_in(context_b, &key));
+    assert_eq!(state.absolute_pointer_position(source), None);
 }

@@ -24,7 +24,8 @@ RunenInput owns reusable device-level facts and confirmed state:
 - demonstrated tablet/stylus observations;
 - coordinate and measurement domains, source time, delivery/history role,
   evidence certainty, and origin;
-- deterministic grouped admission and confirmed-state reduction.
+- deterministic grouped admission, scoped source/device continuity loss, and confirmed-state
+  reduction.
 
 It does not own platform acquisition, winit/OS APIs, App/Host/window lifecycle,
 product actions/bindings, RunenUI routing/focus/text semantics, Draw behavior,
@@ -43,10 +44,16 @@ InputObservation::Keyboard(KeyboardInput)
 InputObservation::PointerButton(PointerButtonInput)
 InputObservation::Scroll(ScrollInput)
 InputObservation::Contact(ContactInput)
+InputObservation::ContinuityLost(ContinuityLoss)
 ```
 
 `ContactInput` carries the semantic `ContactId`; there is no parallel raw-id
 contact payload.
+
+Continuity loss is meta-evidence. `ContinuityLoss::Source` invalidates confirmed
+state for the source; `ContinuityLoss::Device` invalidates only the device named
+by the group's `InputContext`. Device-scoped loss requires a device-bearing
+context. Window focus and product/UI cancellation remain separate concerns.
 
 Reducer-internal control ids and digital transition forms are not public API.
 

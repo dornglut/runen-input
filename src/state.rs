@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     contact::ContactPhase,
+    continuity::ContinuityLoss,
     digital::DigitalState,
     evidence::{EvidenceStatus, ObservationOrigin},
     identity::{ContactId, InputContext, InputDeviceId, InputSourceId},
@@ -226,6 +227,31 @@ impl InputState {
         }
     }
 
+    fn apply_continuity_loss(&mut self, context: InputContext, loss: ContinuityLoss) {
+        match loss {
+            ContinuityLoss::Source => {
+                self.state
+                    .held_controls
+                    .retain(|(source, _, _)| *source != context.source);
+                self.state
+                    .contacts
+                    .retain(|(source, _, _), _| *source != context.source);
+                self.state.absolute_pointer_positions.remove(&context.source);
+            }
+            ContinuityLoss::Device => {
+                let device = context
+                    .device
+                    .expect("validated device continuity loss requires a device");
+                self.state.held_controls.retain(|(source, candidate, _)| {
+                    *source != context.source || *candidate != Some(device)
+                });
+                self.state.contacts.retain(|(source, candidate, _), _| {
+                    *source != context.source || *candidate != Some(device)
+                });
+            }
+        }
+    }
+
     fn apply(&mut self, context: InputContext, observation: InputObservation) {
         match observation {
             InputObservation::Keyboard(input) => {
@@ -301,6 +327,9 @@ impl InputState {
                         ));
                     }
                 }
+            }
+            InputObservation::ContinuityLost(loss) => {
+                self.apply_continuity_loss(context, loss);
             }
         }
     }
