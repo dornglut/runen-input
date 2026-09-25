@@ -6,7 +6,7 @@ use crate::{
     InputToolKind, KeyLocation, KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey,
     ObservationOrigin, PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton,
     PointerButtonInput, RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime,
-    SourceTimeUnit, TabletCapabilities, TabletObservation, ToolId, Vector2,
+    SourceTimeUnit, StylusTilt, TabletCapabilities, TabletObservation, ToolId, Vector2,
 };
 
 const SOURCE_A: InputSourceId = InputSourceId::new(1);
@@ -1088,6 +1088,20 @@ fn unknown_tablet_capability_knowledge_remains_distinct_from_unsupported() {
             InputObservation::Tablet(supported_without_sample),
         ))
         .expect("supported capability does not require every sample to carry a value");
+
+    let mut unsupported_without_sample = tablet_observation(
+        ContactPhase::Update,
+        EvidenceStatus::ObservedConfirmed,
+        position,
+        None,
+    );
+    unsupported_without_sample.capabilities.pressure = CapabilityKnowledge::Unsupported;
+    authority
+        .admit(InputObservationGroup::single(
+            CONTEXT_A,
+            InputObservation::Tablet(unsupported_without_sample),
+        ))
+        .expect("unsupported capability may omit the corresponding sample value");
 }
 
 #[test]
