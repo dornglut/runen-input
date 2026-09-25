@@ -146,7 +146,7 @@ impl InputState {
     ///
     /// Validation failure leaves confirmed state unchanged.
     pub fn admit(&mut self, group: &InputObservationGroup) -> Result<(), InputError> {
-        validate_group(&group)?;
+        validate_group(group)?;
 
         let source_sequence = self
             .source_sequences

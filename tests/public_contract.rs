@@ -149,6 +149,29 @@ fn public_contract_admits_semantic_observations_and_queries_confirmed_state() {
 }
 
 #[test]
+fn public_admission_borrows_the_exact_group_without_consuming_it() {
+    let context = InputContext::new(InputSourceId::new(19), Some(InputDeviceId::new(4)));
+    let key = PhysicalKeyIdentity::code("KeyBorrowedAdmission");
+    let group = InputObservationGroup::single(
+        context,
+        InputObservation::Keyboard(keyboard(
+            key.clone(),
+            DigitalState::Pressed,
+            ObservationOrigin::SourceReport,
+        )),
+    );
+    let mut state = InputState::default();
+
+    state
+        .admit(&group)
+        .expect("borrowed observation group should admit");
+
+    assert_eq!(group.context, context);
+    assert_eq!(group.observations.len(), 1);
+    assert!(state.key_down_in(context, &key));
+}
+
+#[test]
 fn public_contract_scopes_continuity_loss_without_fabricating_releases() {
     let source = InputSourceId::new(21);
     let context_a = InputContext::new(source, Some(InputDeviceId::new(1)));
