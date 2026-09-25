@@ -369,5 +369,4 @@ mod tests {
             .expect("estimated evidence should remain deliverable");
         assert_eq!(state.contact_position_in(context, contact), Some(current));
     }
-
 }
