@@ -8,8 +8,7 @@ mod tests {
         KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
         PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton, PointerButtonInput,
         RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit,
-        TabletCapabilities,
-        TabletObservation, ToolId, Vector2,
+        TabletCapabilities, TabletObservation, ToolId, Vector2,
     };
 
     fn keyboard(
