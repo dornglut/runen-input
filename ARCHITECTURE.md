@@ -66,13 +66,16 @@ The semantic core is std-only. No compatibility forwarder, source include,
 submodule, moving branch dependency, or private predecessor reach-through is
 part of the architecture.
 
-## ADR-0008 transfer
+## Current authority
 
-The initial successor candidate is non-authoritative while unmerged. Acceptance
-on RunenInput `main` switches semantic source authority to the accepted
-successor revision immediately. The Runenwerk predecessor then freezes until its
-exact-revision consumer migration and predecessor deletion are accepted.
+The ADR-0008 source-authority handoff and Runenwerk predecessor retirement are
+complete. RunenInput `main` is the sole reusable semantic authority for this
+boundary.
 
-A cutover-blocking reusable defect discovered after successor acceptance is fixed
-here and accepted here; the frozen predecessor is not patched as an alternate
-implementation.
+Runenwerk consumes an immutable accepted RunenInput revision and owns only its
+backend acquisition, runtime integration, compatibility projections, and product
+semantics. Future reusable input changes are accepted here first and adopted by
+consumers through explicit immutable revisions.
+
+Historical bootstrap and transfer provenance remains recorded in
+[BOOTSTRAP.md](BOOTSTRAP.md).

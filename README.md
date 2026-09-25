@@ -5,13 +5,13 @@ observations and deterministic confirmed-state semantics.
 
 ## Authority
 
-RunenInput's accepted default branch is the semantic source authority for the
-standalone implementation present there. Under Engineering ADR 0008, an
-unmerged transfer candidate is staging only; the initial authority switch occurs
-only when the successor transfer is accepted on `main`.
+RunenInput's accepted default branch is the sole semantic source authority for
+the standalone framework. The ADR-0008 transfer and Runenwerk consumer cutover
+are complete.
 
-After that switch, the Runenwerk predecessor copy is frozen and deletion-bound
-until the exact-revision consumer cutover completes.
+Runenwerk is a downstream integration/product consumer pinned to an immutable
+accepted RunenInput revision. It retains backend acquisition, runtime integration,
+and product projection ownership rather than a second reusable reducer.
 
 ## Boundary
 
@@ -63,7 +63,7 @@ publish: false
 ## Validation
 
 `cargo validate` is the repository-owned merge-readiness command. It covers
-the transferred semantic laws, public-contract integration tests, independent
+the accepted semantic laws, public-contract integration tests, independent
 downstream conformance, source/dependency boundary guards, formatting, locked
 tests, strict Clippy, rustdoc, the declared Rust floor, Git whitespace, and
 unchanged repository state.

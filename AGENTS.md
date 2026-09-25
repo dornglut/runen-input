@@ -22,17 +22,11 @@ editing.
 - Keep tracked-content contributions `owner-only` until an accepted inbound
   mechanism preserves commercial-relicensing rights.
 
-## ADR-0008 transfer rule
+## Current authority
 
-Before the initial successor transfer is accepted, Runenwerk remains semantic
-source authority and the RunenInput branch is staging only.
-
-Once the successor transfer is accepted on `main`, RunenInput becomes sole
-semantic source authority. The predecessor copy is frozen and may change only
-for downstream integration, exact-revision migration, evidence, and deletion.
-
-Cutover-blocking reusable defects after the switch are fixed in RunenInput, not
-in the frozen predecessor.
+RunenInput `main` is the sole reusable semantic authority for this boundary.
+Runenwerk and other adopters are downstream consumers. Reusable defects and
+capabilities are accepted here before consumers repin immutable revisions.
 
 ## Validation
 
@@ -43,6 +37,6 @@ cargo validate
 ```
 
 Exact-head repository CI is acceptance authority. Reconcile current `main`,
-review state, predecessor source blob/open writers, and repository settings
+review state, open writers, downstream dependency evidence, and repository settings
 before guarded squash merge. Never claim local, CI, platform, or downstream
 evidence that was not observed.
