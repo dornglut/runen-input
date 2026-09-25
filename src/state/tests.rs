@@ -1,8 +1,8 @@
 use super::{DigitalTransition, InputState};
 use crate::{
     AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, ContinuityLoss,
-    CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId, InputError,
-    InputObservation, InputObservationGroup, InputSourceId, InputToolKind, KeyLocation,
+    CoordinateSpace, DeliveryRole, DigitalState, EvidenceStatus, InputContext, InputDeviceId,
+    InputError, InputObservation, InputObservationGroup, InputSourceId, InputToolKind, KeyLocation,
     KeyboardInput, LogicalKey, MeasurementDomain, NativeLogicalKey, ObservationOrigin,
     PhysicalKeyIdentity, PhysicalTabletControls, Point2, PointerButton, PointerButtonInput,
     RelativeMotionUnit, ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit,
@@ -463,7 +463,10 @@ fn device_continuity_loss_preserves_sibling_device_and_source_pointer_state() {
         authority.contact_position_in(context_b, contact),
         Some(position)
     );
-    assert_eq!(authority.absolute_pointer_position(SOURCE_A), Some(position));
+    assert_eq!(
+        authority.absolute_pointer_position(SOURCE_A),
+        Some(position)
+    );
 }
 
 #[test]

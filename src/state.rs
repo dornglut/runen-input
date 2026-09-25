@@ -236,7 +236,9 @@ impl InputState {
                 self.state
                     .contacts
                     .retain(|(source, _, _), _| *source != context.source);
-                self.state.absolute_pointer_positions.remove(&context.source);
+                self.state
+                    .absolute_pointer_positions
+                    .remove(&context.source);
             }
             ContinuityLoss::Device => {
                 let device = context
