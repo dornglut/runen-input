@@ -1,12 +1,13 @@
 use super::{DigitalTransition, InputState};
 use crate::{
-    AnalogMeasurement, ContactId, ContactPhase, ContactPresence, CoordinateSpace, DeliveryRole,
+    AnalogMeasurement, ContactId, ContactInput, ContactPhase, ContactPresence, CoordinateSpace,
+    DeliveryRole,
     DigitalState, EvidenceStatus, InputContext, InputDeviceId, InputError, InputObservation,
     InputObservationGroup, InputSourceId, InputToolKind, KeyLocation, KeyboardInput, LogicalKey,
     MeasurementDomain, NativeLogicalKey, ObservationOrigin, PhysicalKeyIdentity,
     PhysicalTabletControls, Point2, PointerButton, PointerButtonInput, RelativeMotionUnit,
-    ScrollDelta, SourceTime, SourceTimeUnit, TabletCapabilities, TabletObservation, ToolId,
-    Vector2,
+    ScrollDelta, ScrollDomain, ScrollInput, SourceTime, SourceTimeUnit, TabletCapabilities,
+    TabletObservation, ToolId, Vector2,
 };
 
 const SOURCE_A: InputSourceId = InputSourceId::new(1);
@@ -317,25 +318,25 @@ fn same_contact_id_on_distinct_contexts_does_not_alias() {
     authority
         .admit(InputObservationGroup::single(
             context_a,
-            InputObservation::Contact {
+            InputObservation::Contact(ContactInput {
                 contact,
                 phase: ContactPhase::Begin,
                 position,
                 pressure: None,
                 altitude_angle_radians: None,
-            },
+            }),
         ))
         .expect("context-A contact should admit");
     authority
         .admit(InputObservationGroup::single(
             context_b,
-            InputObservation::Contact {
+            InputObservation::Contact(ContactInput {
                 contact,
                 phase: ContactPhase::Begin,
                 position,
                 pressure: None,
                 altitude_angle_radians: None,
-            },
+            }),
         ))
         .expect("context-B contact should admit");
 
@@ -376,12 +377,20 @@ fn reconciliation_changes_confirmed_state_without_an_ordinary_edge() {
 
 #[test]
 fn vertical_only_scroll_keeps_horizontal_absent_not_measured_zero() {
-    let delta = ScrollDelta::vertical_only(0.0);
+    let input = ScrollInput {
+        delta: ScrollDelta::vertical_only(0.0),
+        domain: ScrollDomain::Lines,
+        phase: None,
+    };
+    let observation = InputObservation::Scroll(input);
 
-    assert_eq!(delta.horizontal, None);
-    assert_eq!(delta.vertical, Some(0.0));
+    let InputObservation::Scroll(input) = observation else {
+        panic!("scroll payload must remain canonical");
+    };
+    assert_eq!(input.delta.horizontal, None);
+    assert_eq!(input.delta.vertical, Some(0.0));
     assert_ne!(
-        delta,
+        input.delta,
         ScrollDelta {
             horizontal: Some(0.0),
             vertical: Some(0.0),
@@ -392,14 +401,14 @@ fn vertical_only_scroll_keeps_horizontal_absent_not_measured_zero() {
 #[test]
 fn omitted_pressure_remains_distinct_from_measured_zero() {
     let position = Point2::new(10.0, 12.0, CoordinateSpace::UnspecifiedTargetUnits);
-    let omitted = InputObservation::Contact {
+    let omitted = InputObservation::Contact(ContactInput {
         contact: ContactId::new(9),
         phase: ContactPhase::Update,
         position,
         pressure: None,
         altitude_angle_radians: None,
-    };
-    let measured_zero = InputObservation::Contact {
+    });
+    let measured_zero = InputObservation::Contact(ContactInput {
         contact: ContactId::new(9),
         phase: ContactPhase::Update,
         position,
@@ -408,7 +417,7 @@ fn omitted_pressure_remains_distinct_from_measured_zero() {
             MeasurementDomain::UnspecifiedScalar,
         )),
         altitude_angle_radians: None,
-    };
+    });
 
     assert_ne!(omitted, measured_zero);
 }

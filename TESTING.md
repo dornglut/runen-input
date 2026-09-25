@@ -43,8 +43,9 @@ contact clearing, and invalid tablet measurement atomicity.
 the public `runen-input` package through `path = "../.."`.
 
 It proves multi-context key state, aggregate release behavior, reconciliation,
-pointer-button state, and contact state without Runenwerk, winit, RunenECS,
-RunenUI, or private-module access.
+pointer-button state, direct canonical scroll/contact payload admission, and
+contact state without Runenwerk, winit, RunenECS, RunenUI, or private-module
+access.
 
 ## CI
 

@@ -45,19 +45,16 @@ fn is_finite(observation: &InputObservation) -> bool {
         InputObservation::RelativeMotion { delta, .. } => {
             delta.x.is_finite() && delta.y.is_finite()
         }
-        InputObservation::Scroll { delta, .. } => {
-            delta.horizontal.is_none_or(|value| value.is_finite())
-                && delta.vertical.is_none_or(|value| value.is_finite())
+        InputObservation::Scroll(input) => {
+            input.delta.horizontal.is_none_or(|value| value.is_finite())
+                && input.delta.vertical.is_none_or(|value| value.is_finite())
         }
-        InputObservation::Contact {
-            position,
-            pressure,
-            altitude_angle_radians,
-            ..
-        } => {
-            point_is_finite(*position)
-                && pressure.is_none_or(measurement_is_finite)
-                && altitude_angle_radians.is_none_or(|value| value.is_finite())
+        InputObservation::Contact(input) => {
+            point_is_finite(input.position)
+                && input.pressure.is_none_or(measurement_is_finite)
+                && input
+                    .altitude_angle_radians
+                    .is_none_or(|value| value.is_finite())
         }
         InputObservation::Tablet(observation) => {
             point_is_finite(observation.position)
@@ -88,9 +85,9 @@ fn measurement_is_finite(measurement: AnalogMeasurement) -> bool {
 
 fn has_valid_measurements(observation: &InputObservation) -> bool {
     match observation {
-        InputObservation::Contact { pressure, .. } => {
-            pressure.is_none_or(|measurement| measurement.domain.accepts(measurement.value))
-        }
+        InputObservation::Contact(input) => input
+            .pressure
+            .is_none_or(|measurement| measurement.domain.accepts(measurement.value)),
         InputObservation::Tablet(observation) => {
             observation
                 .pressure

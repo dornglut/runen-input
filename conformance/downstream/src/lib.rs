@@ -1,10 +1,11 @@
 #[cfg(test)]
 mod tests {
     use runen_input::{
-        ContactId, ContactPhase, CoordinateSpace, DigitalState, InputContext, InputDeviceId,
-        InputObservation, InputObservationGroup, InputSourceId, InputState, KeyLocation,
-        KeyboardInput, LogicalKey, NativeLogicalKey, ObservationOrigin, PhysicalKeyIdentity,
-        Point2, PointerButton, PointerButtonInput,
+        ContactId, ContactInput, ContactPhase, CoordinateSpace, DigitalState, InputContext,
+        InputDeviceId, InputObservation, InputObservationGroup, InputSourceId, InputState,
+        KeyLocation, KeyboardInput, LogicalKey, NativeLogicalKey, ObservationOrigin,
+        PhysicalKeyIdentity, Point2, PointerButton, PointerButtonInput, ScrollDelta, ScrollDomain,
+        ScrollInput,
     };
 
     fn keyboard(
@@ -86,18 +87,29 @@ mod tests {
         state
             .admit(InputObservationGroup::single(
                 context_a,
-                InputObservation::Contact {
+                InputObservation::Contact(ContactInput {
                     contact: ContactId::new(3),
                     phase: ContactPhase::Begin,
                     position,
                     pressure: None,
                     altitude_angle_radians: None,
-                },
+                }),
             ))
             .expect("contact should admit");
         assert_eq!(
             state.contact_position_in(context_a, ContactId::new(3)),
             Some(position)
         );
+
+        state
+            .admit(InputObservationGroup::single(
+                context_a,
+                InputObservation::Scroll(ScrollInput {
+                    delta: ScrollDelta::vertical_only(1.0),
+                    domain: ScrollDomain::Lines,
+                    phase: None,
+                }),
+            ))
+            .expect("scroll payload should admit without reconstruction");
     }
 }
