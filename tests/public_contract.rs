@@ -26,7 +26,6 @@ fn public_input_error_implements_standard_error_and_reports_precise_messages() {
     );
 }
 
-
 #[test]
 fn crate_root_exports_the_complete_accepted_public_surface() {
     assert_public_type::<AnalogMeasurement>();
