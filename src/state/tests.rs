@@ -696,16 +696,9 @@ fn tablet_observation(
     }
 }
 
-fn historical_tablet_observation(
-    phase: ContactPhase,
-    position: Point2,
-) -> TabletObservation {
-    let mut observation = tablet_observation(
-        phase,
-        EvidenceStatus::ObservedConfirmed,
-        position,
-        None,
-    );
+fn historical_tablet_observation(phase: ContactPhase, position: Point2) -> TabletObservation {
+    let mut observation =
+        tablet_observation(phase, EvidenceStatus::ObservedConfirmed, position, None);
     observation.delivery = DeliveryRole::HistoricalCoalesced;
     observation
 }
@@ -714,10 +707,8 @@ fn historical_tablet_observation(
 fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
     let mut authority = InputState::default();
     let contact = ContactId::new(44);
-    let historical_position =
-        Point2::new(3.0, 5.0, CoordinateSpace::WindowPhysicalPixels);
-    let current_position =
-        Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+    let historical_position = Point2::new(3.0, 5.0, CoordinateSpace::WindowPhysicalPixels);
+    let current_position = Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
 
     authority
         .admit(InputObservationGroup::single(
@@ -751,10 +742,7 @@ fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
         authority
             .admit(InputObservationGroup::single(
                 CONTEXT_A,
-                InputObservation::Tablet(historical_tablet_observation(
-                    phase,
-                    historical_position,
-                )),
+                InputObservation::Tablet(historical_tablet_observation(phase, historical_position)),
             ))
             .expect("historical tablet evidence should remain deliverable");
         assert_eq!(
@@ -782,10 +770,8 @@ fn historical_tablet_delivery_never_mutates_current_confirmed_contact_state() {
 fn mixed_tablet_group_keeps_ordinary_current_sample_authoritative() {
     let mut authority = InputState::default();
     let contact = ContactId::new(44);
-    let initial_position =
-        Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
-    let current_position =
-        Point2::new(20.0, 24.0, CoordinateSpace::WindowPhysicalPixels);
+    let initial_position = Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+    let current_position = Point2::new(20.0, 24.0, CoordinateSpace::WindowPhysicalPixels);
 
     authority
         .admit(InputObservationGroup::single(
@@ -832,8 +818,7 @@ fn ordinary_current_confirmed_tablet_terminal_phases_clear_contact_state() {
     for phase in [ContactPhase::End, ContactPhase::Cancel] {
         let mut authority = InputState::default();
         let contact = ContactId::new(44);
-        let position =
-            Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
+        let position = Point2::new(10.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
 
         authority
             .admit(InputObservationGroup::single(
