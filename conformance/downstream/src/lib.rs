@@ -211,8 +211,7 @@ mod tests {
     #[test]
     fn independent_consumer_distinguishes_source_time_context_and_unit_failures() {
         let context = InputContext::new(InputSourceId::new(61), Some(InputDeviceId::new(6)));
-        let other_context =
-            InputContext::new(InputSourceId::new(62), Some(InputDeviceId::new(7)));
+        let other_context = InputContext::new(InputSourceId::new(62), Some(InputDeviceId::new(7)));
         let position = Point2::new(7.0, 12.0, CoordinateSpace::WindowPhysicalPixels);
         let base = TabletObservation {
             contact: ContactId::new(13),
@@ -277,5 +276,4 @@ mod tests {
             Err(InputError::InvalidSourceTimeUnit)
         );
     }
-
 }
