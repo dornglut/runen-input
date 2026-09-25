@@ -14,8 +14,9 @@ The validator covers:
 
 - required authority and provenance files;
 - package/repository/license identity;
-- a recursive, fail-closed scan of the complete Rust product source closure;
-- standalone source/dependency boundaries;
+- recursive, fail-closed scans of the complete Rust product and independent conformance source closures;
+- standalone source/dependency boundaries, including the std-only product semantic core;
+- required canonical executable example presence;
 - the public observation/state contract;
 - all 15 transferred focused semantic/reducer laws;
 - focused source/device continuity-loss laws;
@@ -53,8 +54,9 @@ the public `runen-input` package through `path = "../.."`.
 It proves multi-context key state, aggregate release behavior, reconciliation,
 pointer-button state, direct canonical scroll/contact/tablet payload admission,
 tri-state tablet capability knowledge, explicit unsupported-evidence rejection,
-source-time context/unit validation, scoped continuity loss, and contact state without Runenwerk, winit, RunenECS,
-RunenUI, or private-module access.
+source-time context/unit validation, relative-motion/absolute-position separation,
+historical/predicted/estimated tablet non-mutation, scoped continuity loss, and contact state
+without Runenwerk, winit, RunenECS, RunenUI, or private-module access.
 
 ## CI
 

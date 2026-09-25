@@ -20,6 +20,7 @@ const REQUIRED_FILES: &[&str] = &[
     "conformance/downstream/Cargo.lock",
     "conformance/downstream/Cargo.toml",
     "conformance/downstream/src/lib.rs",
+    "examples/basic_state.rs",
     "rust-toolchain.toml",
     "src/lib.rs",
     "tests/public_contract.rs",
@@ -163,6 +164,7 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
     )?;
     require_contains("Cargo.toml", &cargo, "license = \"GPL-3.0-only\"")?;
     require_absent("Cargo.toml", &cargo, "rust-framework-template")?;
+    validate_std_only_product_manifest(&cargo)?;
 
     let lock = read_text(root, "Cargo.lock")?;
     require_contains("Cargo.lock", &lock, "name = \"runen-input\"")?;
@@ -205,6 +207,28 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
     Ok(())
 }
 
+fn validate_std_only_product_manifest(cargo: &str) -> Result<(), String> {
+    for line in cargo.lines() {
+        let section = line.split('#').next().unwrap_or_default().trim();
+        let direct_dependency_section =
+            matches!(section, "[dependencies]" | "[build-dependencies]")
+                || section.starts_with("[dependencies.")
+                || section.starts_with("[build-dependencies.");
+        let target_dependency_section = section.starts_with("[target.")
+            && (section.contains(".dependencies]")
+                || section.contains(".dependencies.")
+                || section.contains(".build-dependencies]")
+                || section.contains(".build-dependencies."));
+        if direct_dependency_section || target_dependency_section {
+            return Err(format!(
+                "Cargo.toml product semantic core must remain std-only; dependency section is not allowed: {section}"
+            ));
+        }
+    }
+
+    Ok(())
+}
+
 fn validate_root_facade(library: &str) -> Result<(), String> {
     require_absent("src/lib.rs", library, "pub mod ")?;
 
@@ -225,6 +249,7 @@ fn validate_standalone_boundary(root: &Path) -> Result<(), String> {
     }
 
     validate_product_sources(root)?;
+    validate_conformance_sources(root)?;
 
     let downstream = read_text(root, "conformance/downstream/Cargo.toml")?;
     require_contains(
@@ -250,7 +275,7 @@ fn validate_standalone_boundary(root: &Path) -> Result<(), String> {
 }
 
 fn validate_product_sources(root: &Path) -> Result<(), String> {
-    for path in rust_source_files(root)? {
+    for path in rust_source_files(root, "src", "product")? {
         let label = path
             .strip_prefix(root)
             .unwrap_or(&path)
@@ -264,10 +289,31 @@ fn validate_product_sources(root: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn rust_source_files(root: &Path) -> Result<Vec<PathBuf>, String> {
-    let source_root = root.join("src");
+fn validate_conformance_sources(root: &Path) -> Result<(), String> {
+    for path in rust_source_files(root, "conformance/downstream/src", "conformance")? {
+        let label = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        let source = fs::read_to_string(&path)
+            .map_err(|error| format!("failed to read {label}: {error}"))?;
+        validate_source_file(&label, &source)?;
+    }
+
+    Ok(())
+}
+
+fn rust_source_files(
+    root: &Path,
+    relative_root: &str,
+    closure_label: &str,
+) -> Result<Vec<PathBuf>, String> {
+    let source_root = root.join(relative_root);
     if !source_root.is_dir() {
-        return Err("product source root is missing: src".to_owned());
+        return Err(format!(
+            "{closure_label} source root is missing: {relative_root}"
+        ));
     }
 
     let mut paths = Vec::new();
@@ -275,7 +321,9 @@ fn rust_source_files(root: &Path) -> Result<Vec<PathBuf>, String> {
     paths.sort();
 
     if paths.is_empty() {
-        return Err("product source closure contains no Rust files".to_owned());
+        return Err(format!(
+            "{closure_label} source closure contains no Rust files"
+        ));
     }
 
     Ok(paths)
@@ -296,7 +344,7 @@ fn collect_rust_source_files(root: &Path, paths: &mut Vec<PathBuf>) -> Result<()
 
         if file_type.is_symlink() {
             return Err(format!(
-                "product source closure must not contain symlinks: {}",
+                "Rust source closure must not contain symlinks: {}",
                 path.display()
             ));
         }
@@ -450,6 +498,58 @@ mod tests {
         fs::create_dir_all(root.join("src/nested"))
             .expect("temporary nested source root should be creatable");
         root
+    }
+
+    #[test]
+    fn std_only_product_manifest_rejects_runtime_and_build_dependencies() {
+        for manifest in [
+            "[package]\nname = \"runen-input\"\n[dependencies]\nserde = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[dependencies.serde]\nversion = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[build-dependencies]\ncc = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[build-dependencies.cc]\nversion = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.dependencies]\nlibc = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.dependencies.libc]\nversion = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.build-dependencies.cc]\nversion = \"1\"\n",
+        ] {
+            let error = validate_std_only_product_manifest(manifest)
+                .expect_err("product dependency section must violate the std-only boundary");
+            assert!(error.contains("std-only"));
+        }
+
+        for manifest in [
+            "[package]\nname = \"runen-input\"\n[dev-dependencies]\nproptest = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[dev-dependencies.proptest]\nversion = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.dev-dependencies]\nproptest = \"1\"\n",
+        ] {
+            validate_std_only_product_manifest(manifest)
+                .expect("dev-only test dependencies do not change the product semantic core");
+        }
+    }
+
+    #[test]
+    fn nested_conformance_source_cannot_escape_standalone_boundary() {
+        let root = temporary_source_root("conformance-boundary");
+        let conformance = root.join("conformance/downstream/src/nested");
+        fs::create_dir_all(&conformance)
+            .expect("temporary conformance source root should be creatable");
+        fs::write(
+            root.join("conformance/downstream/src/lib.rs"),
+            "// fixture\n",
+        )
+        .expect("temporary conformance crate root should be writable");
+        fs::write(
+            conformance.join("escape.rs"),
+            "use runenwerk::runtime::Host;\n",
+        )
+        .expect("temporary nested conformance source should be writable");
+
+        let error = validate_conformance_sources(&root)
+            .expect_err("nested forbidden coupling must fail the conformance-source scan");
+
+        assert!(error.contains("conformance/downstream/src/nested/escape.rs"));
+        assert!(error.contains("runenwerk"));
+
+        fs::remove_dir_all(root).expect("temporary source root should be removable");
     }
 
     #[test]
