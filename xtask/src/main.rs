@@ -210,10 +210,14 @@ fn validate_product_identity(root: &Path) -> Result<(), String> {
 fn validate_std_only_product_manifest(cargo: &str) -> Result<(), String> {
     for line in cargo.lines() {
         let section = line.split('#').next().unwrap_or_default().trim();
-        let direct_dependency_section =
-            matches!(section, "[dependencies]" | "[build-dependencies]");
+        let direct_dependency_section = matches!(section, "[dependencies]" | "[build-dependencies]")
+            || section.starts_with("[dependencies.")
+            || section.starts_with("[build-dependencies.");
         let target_dependency_section = section.starts_with("[target.")
-            && (section.ends_with(".dependencies]") || section.ends_with(".build-dependencies]"));
+            && (section.contains(".dependencies]")
+                || section.contains(".dependencies.")
+                || section.contains(".build-dependencies]")
+                || section.contains(".build-dependencies."));
         if direct_dependency_section || target_dependency_section {
             return Err(format!(
                 "Cargo.toml product semantic core must remain std-only; dependency section is not allowed: {section}"
@@ -499,18 +503,26 @@ mod tests {
     fn std_only_product_manifest_rejects_runtime_and_build_dependencies() {
         for manifest in [
             "[package]\nname = \"runen-input\"\n[dependencies]\nserde = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[dependencies.serde]\nversion = \"1\"\n",
             "[package]\nname = \"runen-input\"\n[build-dependencies]\ncc = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[build-dependencies.cc]\nversion = \"1\"\n",
             "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.dependencies]\nlibc = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.dependencies.libc]\nversion = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.build-dependencies.cc]\nversion = \"1\"\n",
         ] {
             let error = validate_std_only_product_manifest(manifest)
                 .expect_err("product dependency section must violate the std-only boundary");
             assert!(error.contains("std-only"));
         }
 
-        validate_std_only_product_manifest(
+        for manifest in [
             "[package]\nname = \"runen-input\"\n[dev-dependencies]\nproptest = \"1\"\n",
-        )
-        .expect("dev-only test dependencies do not change the product semantic core");
+            "[package]\nname = \"runen-input\"\n[dev-dependencies.proptest]\nversion = \"1\"\n",
+            "[package]\nname = \"runen-input\"\n[target.'cfg(unix)'.dev-dependencies]\nproptest = \"1\"\n",
+        ] {
+            validate_std_only_product_manifest(manifest)
+                .expect("dev-only test dependencies do not change the product semantic core");
+        }
     }
 
     #[test]
